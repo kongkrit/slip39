@@ -3,14 +3,13 @@ import re
 import datetime
 from io import open
 
-# This script generates the kslip2-standalone.html file.
+# This script generates the standalont index.html file.
 
 # It removes script and style tags and replaces with the file content.
 
-f = open('src/index.html', "r", encoding="utf-8")
+f = open('src/kslip2.html', "r", encoding="utf-8")
 page = f.read()
 f.close()
-
 
 # Script tags
 
@@ -42,7 +41,7 @@ for style in styles:
 
 # Write the standalone file
 
-f = open('kslip2-standalone.html', 'w', encoding="utf-8")
+f = open('index.html', 'w', encoding="utf-8")
 f.write(page)
 f.close()
 
