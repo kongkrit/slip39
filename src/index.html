@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SLIP-39 ⇄ Base64 (Offline)</title>  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>SLIP‑39 ⇄ Base64 (Offline, Raw Base‑1024 Mapping)</h1>
+    <div class="sub">No network needed. Works entirely in your browser. This performs a <b>raw</b> reversible mapping between SLIP‑39 words and bytes (10‑bits per word) using the <i>English SLIP‑39 1024‑word list you supply</i>. It does <u>not</u> validate or produce SLIP‑39 checksums or group metadata.</div>
+  </header>
+
+  <main class="grid">
+  <section class="card">
+    <h2>1) SLIP-39 English wordlist</h2>
+    <div class="note">This tool comes with the official SLIP-39 English list preloaded (indices 0..1023).</div>
+    <textarea id="wordlist" readonly></textarea>
+  
+    <div class="row" style="margin-top:8px">
+      <span id="listStatus" class="pill">Wordlist ready ✓</span>
+    </div>
+  </section>
+
+    <section class="card">
+      <h2>Settings</h2>
+      <div class="kvs">
+        <div class="key"></div>
+        <div>
+          <label><input type="checkbox" id="lowercase" checked> force lowercase words</label><br>
+          <label><input type="checkbox" id="normalize" checked> normalize whitespace (spaces/newlines/tabs)</label><br>
+        </div>
+      </div>
+      <div class="hr"></div>
+      <div class="tiny">Note: Without SLIP‑39 checksum logic, not every bytes→words conversion represents a valid share phrase. This tool focuses on reversible mapping only.</div>
+    </section>
+
+    <section class="card">
+      <h2>2) SLIP‑39 mnemonic → Base64</h2>
+      <textarea id="mnemonic" placeholder="Enter SLIP‑39 words separated by single spaces"></textarea>
+      <div class="row" style="margin-top:8px">
+	    <button id="btnM2BURL">Convert to Base64URL</button>
+        <button id="btnM2B" class="accent">Convert to Base64</button>
+        <button id="btnCopyB64">Copy Base64</button>
+        <button id="btnCopyHex">Copy Hex</button>
+        <span id="m2bStatus" class="pill">Idle</span>
+      </div>
+      <div class="sp"></div>
+      <div class="cols">
+        <div>
+          <div class="note">Base64</div>
+          <textarea id="b64Out" class="small" readonly></textarea>
+        </div>
+        <div>
+          <div class="note">Hex</div>
+          <textarea id="hexOut" class="small" readonly></textarea>
+        </div>
+      </div>
+      <div class="kvs" style="margin-top:8px">
+        <div class="key">Words:</div><div id="statWords">0</div>
+        <div class="key">Bytes:</div><div id="statBytes">0</div>
+        <div class="key">Bits:</div><div id="statBits">0</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3) Base64 → SLIP‑39 mnemonic</h2>
+      <textarea id="b64In" placeholder="Enter Base64, (use - and _ for + and /)"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="btnB2M" class="accent">Convert to Words</button>
+        <button id="btnCopyWords">Copy Words</button>
+        <span id="b2mStatus" class="pill">Idle</span>
+      </div>
+      <div class="sp"></div>
+      <textarea id="mnemonicOut" class="small" readonly></textarea>
+      <div class="kvs" style="margin-top:8px">
+	    <div class="key">Words:</div><div id="statWordsOut">0</div>
+        <div class="key">Bytes:</div><div id="statBytesIn">0</div>
+        <div class="key">Bits:</div><div id="statBitsIn">0</div>
+      </div>
+    </section>
+
+    <section class="card danger">
+      <h2>Important</h2>
+      <ul>
+        <li>This tool is a <b>raw base‑1024 mapper</b>. It <i>does not</i> validate SLIP‑39 checksums, iteration exponents, identifiers, or group/threshold metadata.</li>
+        <li>Converting bytes → words here may yield phrases that are <i>not</i> valid SLIP‑39 mnemonics. Likewise, converting words → bytes does not confirm share integrity.</li>
+        <li>Handle secrets carefully. Use an offline machine and clear your clipboard after use.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
