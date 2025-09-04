@@ -37,15 +37,21 @@
 
         <h3>Groups and Members</h3>
 
-        <label for="total-shares">Total Shares</label>
-        <input id="total-shares" type="number" value="3">
-        <p id="total-shares-error" class="err"></p>
-		<p class="note">The number of shares to generate.</p>
-
-        <label for="threshold">Threshold</label>
-        <input id="threshold" type="number" value="2">
-        <p id="threshold-error" class="err"></p>
-        <p class="note">The number of shares needed to reconstruct the master secret.</p>
+		<div class="shares-threshold-row">
+			<div class="field">
+				<label for="total-shares">Total Shares</label>
+				<input id="total-shares" type="number" value="3">
+				<p id="total-shares-error" class="err"></p>
+				<p class="note">The number of shares to generate.</p>
+			</div>
+			
+			<div class="field">
+				<label for="threshold">Threshold</label>
+				<input id="threshold" type="number" value="2">
+				<p id="threshold-error" class="err"></p>
+				<p class="note">The number of shares needed to reconstruct the master secret.</p>
+			</div>
+		</div>
 
         <h3>Shares</h3>
 
@@ -86,6 +92,7 @@
   </main>
 
   <script src="js/slip39-libs.js"></script>
+  <script src="js/conversion-lib.js"></script>
   <script src="js/index.js"></script>
 </body>
 </html>
