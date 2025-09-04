@@ -133,6 +133,11 @@
         threshold,
         groups,
       });
+	  
+	  const dPath = "r/0"
+	  const firstPhrase = slip.fromPath(dPath).mnemonics;
+
+	  console.log("createShares firstPhrase:", firstPhrase[0]);
 
       // show in the UI
       let sharesStr = "";
