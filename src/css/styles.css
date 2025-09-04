@@ -33,7 +33,7 @@
     h1 { margin: 0 0 6px 0; font-size: 20px; }
 	h3 { margin-top: 8px; margin-bottom: 0px; }
     .sub { color: var(--muted); font-size: 12px; }
-    main { padding: 16px; max-width: 1100px; margin: 0 auto; }
+    main { padding: 16px; max-width: 1600px; margin: 0 auto; }
     .grid {
       display: grid;
       gap: 16px;
@@ -47,8 +47,8 @@
 		margin-top: 0;
 		margin-bottom: 8px; /* same as 0.5em if base font size = 16px */
 	}
-    @media(min-width: 980px) {
-      .grid { grid-template-columns: 1.2fr 0.8fr; }
+    @media(min-width: 1150px) {
+      .grid { grid-template-columns: 1fr 1fr; }
     }
     .card {
       background: var(--card);
@@ -66,7 +66,7 @@
 	.card h3,
 	.card p,
 	.card label {
-		padding-left: 3px;
+		padding-left: 4px;
 	}
 
     .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -118,6 +118,21 @@
 	.err { margin: 6px 0; color: var(--err, #c0392b); }
 	.err:empty { display: none; }   /* collapses when no text */
     .cols { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
+	.shares-threshold-row {
+		display: flex;
+		flex-wrap: wrap;     /* allows stacking when space is tight */
+		gap: 16px;           /* space between the two blocks */
+	}
+	.shares-threshold-row .field {
+		flex: 1 1 200px;     /* equal width, minimum 200px before wrapping */
+		min-width: 0;        /* prevents overflow */
+	}
+	.shares-threshold-row label,
+	.shares-threshold-row input,
+	.shares-threshold-row p {
+		display: block;
+		width: 100%;
+	}
     .kvs { display: grid; grid-template-columns: max-content 1fr; gap: 6px 10px; align-items: center; }
     .kvs div.key { color: var(--muted); }
     .footer { color: var(--muted); font-size: 12px; margin-top: 10px; }
