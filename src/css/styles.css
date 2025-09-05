@@ -95,7 +95,7 @@
       transition: transform 0.05s ease, background 0.2s ease, border 0.2s ease;
     }
     button:hover {
-		background: #1b2029;      /* a touch lighter than #0f1216 */
+		background: #232a34;   /*  was #1b2029  */
 		border-color: #3a3f47;    /* slightly lighter border */
 		color: var(--fg);         /* keep text color the same */
 	}
@@ -110,6 +110,71 @@
 	}
     .ok { color: var(--ok); }
     .warn { color: var(--warn); }
+
+	/* ---------- stepper: no outer border, only inner lines ---------- */
+	.number-control {
+		display: inline-flex;
+		align-items: center;
+		background: transparent;          /* full blend with card */
+		border: none;                     /* ← no outer border */
+		border-radius: 0;                 /* ← square edges */
+		overflow: hidden;
+	}
+	
+	.number-control input {
+		background: transparent;
+		border: none;
+		color: var(--fg);
+		font-family: monospace;
+		font-size: 14px;
+		width: 12px;
+		max-width: 12px;
+		min-width: 12px;
+		padding: 0;                    /* remove top/bottom dead space */
+		line-height: 28px;             /* match control height → vertical centre */
+		text-align: center;
+		outline: none;
+		overflow: hidden;
+	}
+	
+/* ---------- stepper buttons : lighter monospace symbols ---------- */
+.number-control button {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #0f1216;
+  color: var(--fg);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.05s ease, background 0.2s ease, border 0.2s ease;
+
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  line-height: 28px;
+  text-align: center;
+
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.number-control button.decrement {
+  margin-right: 10px;   /* small gap before the input */
+}
+
+.number-control button:hover {
+  background: #232a34;
+  border-color: #3a3f47;
+}
+
+.number-control button:active {
+  transform: scale(.92);
+}
+
+/* keep the inner separators */
+.number-control button:first-of-type { border-right: 1px solid var(--border); }
+.number-control button:last-of-type  { border-left:  1px solid var(--border); }
+
     .err {
 		color: var(--err);
 		font-size: 12px;
@@ -121,11 +186,23 @@
 	.shares-threshold-row {
 		display: flex;
 		flex-wrap: wrap;     /* allows stacking when space is tight */
-		gap: 16px;           /* space between the two blocks */
+		gap: 6px;           /* space between the two blocks */
 	}
 	.shares-threshold-row .field {
 		flex: 1 1 200px;     /* equal width, minimum 200px before wrapping */
 		min-width: 0;        /* prevents overflow */
+	}
+	.wrap-sentinel {
+		flex: 0 0 1px;          /* 1-px wide when on the same line */
+	   	height: auto;           /* stretch with row thanks to align-items:stretch */
+	   	background: #333;
+	   	margin: 0;
+	   	pointer-events: none;
+    }
+	@media (max-width: 489px) {
+		.wrap-sentinel {
+			display: none;
+		}
 	}
 	.shares-threshold-row label,
 	.shares-threshold-row input,
@@ -148,3 +225,17 @@
       height: 30px;       /* ≈ 1.5em with 14px font */
       resize: none;       /* optional: prevent manual resize */
     }
+	/* Fix stepper readout centering + size (overrides width:100%) */
+	.shares-threshold-row .number-control input#total-shares,
+	.shares-threshold-row .number-control input#threshold {
+		width: 8ch !important;     /* lock width to ~3 digits */
+		min-width: 8ch !important;
+		max-width: 8ch !important;
+		flex: 0 0 auto !important;
+		
+		text-align: center !important;   /* hard-center the digits */
+		text-indent: 0 !important;       /* remove subpixel nudge */
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+		font-variant-numeric: tabular-nums;
+	}
