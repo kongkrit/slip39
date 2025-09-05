@@ -74,6 +74,47 @@
     let masterSecret = bytesToHex(data);
     return masterSecret;
   }
+  
+  function totalSharesAndThresholdAreOk(totalShares, threshold) {
+    if (Number.isNaN(totalShares)) {
+      showTotalSharesError("Value must be a number");
+      return false;
+    }
+    if (totalShares <= 0) {
+      showTotalSharesError("Must be at least 1");
+      return false;
+    }
+    if (totalShares > MAX_SHARES) {
+      showTotalSharesError("Total shares must be " + MAX_SHARES + " or less");
+      return false;
+    }
+
+    if (Number.isNaN(threshold)) {
+      showThresholdError("Value must be a number");
+      return false;
+    }
+    if (threshold > totalShares) {
+      showThresholdError("Must be less than or equal to total shares");
+      return false;
+    }
+    if (threshold <= 0) {
+      showThresholdError("Must be greater than 1");
+      return false;
+    }
+	return true;
+  }
+
+  function masterSecretHexIsOk(masterSecretHex, masterSecretBytes, updateError=true) {
+    if (masterSecretHex.length < 32) {
+      if (updateError) showMasterSecretError("Master Secret must be at least 128 bits (32 hex chars)");
+      return false;
+    }
+    if (masterSecretBytes.length % 2 !== 0) {
+      if (updateError) showMasterSecretError("Master Secret must be an even number of bytes (multiples of 4 hex chars)");
+      return false;
+    }
+	return true;
+  }
 
   function createShares() {
     clearShares();
@@ -83,44 +124,18 @@
       const masterSecretHex = document.getElementById("master-secret-hex").value;
       const masterSecretBytes = hexToBytes(masterSecretHex);
 
-      if (masterSecretHex.length < 32) {
-        showMasterSecretError("Master Secret must be at least 128 bits (32 hex chars)");
-        return;
-      }
-      if (masterSecretBytes.length % 2 !== 0) {
-        showMasterSecretError("Master Secret must be an even number of bytes (multiples of 4 hex chars)");
-        return;
-      }
+      if (!masterSecretHexIsOk(masterSecretHex, masterSecretBytes)) {
+		  return;
+	  }
 
       const totalSharesStr = document.getElementById("total-shares").value;
       const totalShares = parseInt(totalSharesStr, 10);
-      if (Number.isNaN(totalShares)) {
-        showTotalSharesError("Value must be a number");
-        return;
-      }
-      if (totalShares <= 0) {
-        showTotalSharesError("Must be at least 1");
-        return;
-      }
-      if (totalShares > MAX_SHARES) {
-        showTotalSharesError("Total shares must be " + MAX_SHARES + " or less");
-        return;
-      }
 
       const thresholdStr = document.getElementById("threshold").value;
       const threshold = parseInt(thresholdStr, 10);
-      if (Number.isNaN(threshold)) {
-        showThresholdError("Value must be a number");
-        return;
-      }
-      if (threshold > totalShares) {
-        showThresholdError("Must be less than or equal to total shares");
-        return;
-      }
-      if (threshold <= 0) {
-        showThresholdError("Must be greater than 1");
-        return;
-      }
+	  if (!totalSharesAndThresholdAreOk(totalShares, threshold)) {
+		  return;
+	  }
 
       // groups: currently 1-of-1 per member, repeated totalShares times
       const groups = [];
@@ -133,18 +148,29 @@
         threshold,
         groups,
       });
-	  
-	  const dPath = "r/0"
-	  const firstPhrase = slip.fromPath(dPath).mnemonics;
-
-	  console.log("createShares firstPhrase:", firstPhrase[0]);
 
       // show in the UI
-      let sharesStr = "";
-      for (let i = 0; i < totalShares; i++) {
-        const derivationPath = "r/" + i;
-        sharesStr += slip.fromPath(derivationPath).mnemonics + "\n\n";
-      }
+	  let someFirstIndexIsZero = false;
+	  let tries = 0;
+	  let sharesStr = "";
+  	  do {
+        for (let i = 0; i < totalShares; i++) {
+          const derivationPath = "r/" + i;
+  		  const mnemonics = slip.fromPath(derivationPath).mnemonics;
+  		  const firstMnemonic = mnemonics[0].split(" ")[0];
+  		  const firstIndex = converter.slip39arrayToIndices([firstMnemonic])[0];
+		  if (firstIndex < 1) someFirstIndexIsZero = true;
+		  //console.log("firstMnemonic:",firstMnemonic," firstIndex:",firstIndex);
+          sharesStr += mnemonics + "\n\n";
+        }
+		tries++;
+	  } while (someFirstIndexIsZero && (tries < 5));
+	  
+	  console.log("tries:",tries);
+	  if (someFirstIndexIsZero) {
+		alert("🎉 Lottery winner!\nThe random seed gave an invalid share five times in a row.\nBuy a ticket, not a wallet.");
+		return;   // stops the rest of your function
+	  }
       document.getElementById("new-shares").value = sharesStr.trim();
 
       // (Optional) If you also want to produce zbase32-encoded mnemonics, do it here
@@ -251,7 +277,7 @@
     const n = parseInt(totalShares.value, 10);
     totalSharesError.textContent = (n > 0) ? "" : "Total shares must be > 0";
     createShares();
-  }, 100));
+  }, 1));
 
   // Threshold
   threshold.addEventListener("input", debounce(() => {
@@ -259,7 +285,7 @@
     const t = parseInt(threshold.value, 10);
     thresholdError.textContent = (t > 0) ? "" : "Threshold must be > 0";
     createShares();
-  }, 100));
+  }, 1));
 
   // Existing Shares
   existingShares.addEventListener("input", debounce(() => {
@@ -271,6 +297,41 @@
     console.log("decrypter input changed:", decrypter.value);
     reconstruct();
   }, 100));
+
+  /* ---------- stepper buttons with clamping ---------- */
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-target]');
+    if (!btn) return;
+  
+    const id  = btn.dataset.target;          // "total-shares" | "threshold"
+    const inp = document.getElementById(id);
+    const otherId = id === 'total-shares' ? 'threshold' : 'total-shares';
+    const other = document.getElementById(otherId);
+  
+    let v     = parseInt(inp.value, 10) || 1;
+    let step  = btn.classList.contains('decrement') ? -1 : 1;
+    v += step;
+  
+    /* ---- clamp rules ---- */
+    if (v < 1) v = 1;                        // total-shares and threshold must be both >=1
+    if (id === 'total-shares') {
+      if (v > MAX_SHARES) v = MAX_SHARES;    // total-shares must be <= MAX_SHARES
+      // if we shrink total-shares below threshold, pull threshold down too
+      if (v < +other.value) other.value = v;
+    } else {                                 // threshold
+      if (v > +other.value) v = +other.value; // threshold must be <= total-shares
+    }
+
+    inp.value = v;
+	other.value = +other.value;
+	
+    const hex   = byId('master-secret-hex').value.trim();
+    const bytes = hexToBytes(hex);
+    if (!masterSecretHexIsOk(hex, bytes, false)) return;   // silent abort without updating MasterSecretHex error
+  
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+    other.dispatchEvent(new Event('input', { bubbles: true })); // refresh errors
+  });
 
   // --- Combine mode ---
   combineRadios.forEach(radio => {
