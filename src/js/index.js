@@ -63,6 +63,7 @@
   function clearReconstructed() {
     document.getElementById("reconstructed-hex").value = "";
     document.getElementById("reconstructed-error").innerHTML = "&nbsp;";
+//	document.getElementById("reconstructed-error").value = "";
   }
 
   function generateMasterSecret(strengthBits) {
@@ -201,18 +202,27 @@
 	const recInput = byId("existing-shares").value.trim();
 	if (recInput.length === 0) return;
 	
-	let mnemonics;
+	let mnemonics, base58s;
 	
 	if (combineMode === "base58") {
-		const base58s = recInput.split("\n").map(m => m.trim()).filter(m => m.length > 0);
+		base58s = recInput.split("\n").map(m => m.trim()).filter(m => m.length > 0);
 //		console.log("base58s",base58s);
 		mnemonics = base58s.map(converter.base58toSlip39);
 	} else {
 	    mnemonics = recInput.split("\n").map(m => m.trim()).filter(m => m.length > 0);
+//	    console.log("mnemonics", mnemonics);
+		base58s = mnemonics.map(converter.slip39toBase58);
 	}
+	
 	const mnemonicsStr = mnemonics.join("\n\n");
-	if (combineMode === "base58") decodedMnemonics.value = mnemonicsStr;
+	const base58Str = base58s.join("\n\n");
+	if (combineMode === "base58") {
+		decodedMnemonics.value = mnemonicsStr;
+	} else {
+		decodedMnemonics.value = base58Str;
+	}
 //	console.log("mnemonicsStr",mnemonicsStr);
+//	console.log("base58Str", base58Str);
 /*
     const mnemonicsStr = document.getElementById("existing-shares").value;
 
@@ -229,6 +239,7 @@
       document.getElementById("reconstructed-error").textContent = e.message || String(e);
       return;
     }
+	document.getElementById("reconstructed-error").innerHTML = "&nbsp;";
 
     const secretHex = bytesToHex(secretBytes);
     document.getElementById("reconstructed-hex").value = secretHex;
@@ -272,6 +283,7 @@
   const newSharesBase58   = byId("new-shares-base58");
 
   const decodeLabel       = byId("decode-mode");
+  const convertLabel      = byId("convert-to");
   const combineRadios     = qsa("input[name='combine-mode']");
 
   const existingShares    = byId("existing-shares");
@@ -374,15 +386,18 @@
 	  if (combineMode === "mnemonics") {
         existingShares.placeholder = "Enter your mnemonic shares here, one per line";
         decodeLabel.textContent = "Mnemonics Input";
-		decodedBlock.style.display = "none";
+		convertLabel.textContent = "Converted to Base-58";
+//		decodedBlock.style.display = "none";
       } else if (combineMode === "base58") {
         existingShares.placeholder = "Enter your Base-58 shares here, one per line";
         decodeLabel.textContent = "Base-58 Input";
-		decodedBlock.style.display = "block";
+		convertLabel.textContent = "Converted to mnemonics";
+//		decodedBlock.style.display = "block";
       } else {
 		existingShares.placeholder = "Invalid combine mode detected.";
 		decodeLabel.textContent = "Error!";
-		decodedBlock.style.display = "none";
+		convertLabel.textContent = "Error!";
+//		decodedBlock.style.display = "none";
 	  }
 
       // Clear outputs when switching modes
