@@ -89,10 +89,10 @@
 
         <label id="decode-mode" for="existing-shares">Mnemonics Input</label>
         <textarea id="existing-shares" rows="10" placeholder="Enter your mnemonic shares here, one per line"></textarea>
-        <p class="err" id="reconstructed-error"></p>
+        <p class="err" id="reconstructed-error">&nbsp</p>
 
-		<div id="decoded-block" style="display:none">
-			<label for="decoded-mnemonics">Decoded Mnemonics</label>
+		<div id="decoded-block">
+			<label id="convert-to" for="decoded-mnemonics">Converted to Base-58</label>
 			<textarea id="decoded-mnemonics" readonly rows="10" placeholder="Decoded mnemonics appear here."></textarea>
 		</div>
 
