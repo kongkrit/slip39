@@ -54,7 +54,7 @@
 
   function clearShares() {
     document.getElementById("new-shares").value = "";
-    document.getElementById("new-shares-zbase32").value = "";
+    document.getElementById("new-shares-base58").value = "";
     showMasterSecretError(""); 
     showTotalSharesError("");
     showThresholdError("");
@@ -153,28 +153,40 @@
 	  let someFirstIndexIsZero = false;
 	  let tries = 0;
 	  let sharesStr = "";
+	  let sharesBase58str = "";
   	  do {
+		let phrasesIntArray = [];
         for (let i = 0; i < totalShares; i++) {
           const derivationPath = "r/" + i;
   		  const mnemonics = slip.fromPath(derivationPath).mnemonics;
-  		  const firstMnemonic = mnemonics[0].split(" ")[0];
+		  const phraseText = mnemonics[0];
+		  const phrase = phraseText.split(" "); 
+          const base58text = converter.slip39toBase58(phraseText);
+		  // console.log("phraseText",phraseText);
+		  // console.log("base58text",base58text);
+		  if (!converter.conversionOk(phraseText, base58text)) return;
+
+  		  const firstMnemonic = phrase[0];
   		  const firstIndex = converter.slip39arrayToIndices([firstMnemonic])[0];
 		  if (firstIndex < 1) someFirstIndexIsZero = true;
 		  //console.log("firstMnemonic:",firstMnemonic," firstIndex:",firstIndex);
           sharesStr += mnemonics + "\n\n";
+		  sharesBase58str += base58text + "\n\n";
         }
 		tries++;
 	  } while (someFirstIndexIsZero && (tries < 5));
 	  
 	  console.log("tries:",tries);
 	  if (someFirstIndexIsZero) {
-		alert("🎉 Lottery winner!\nThe random seed gave an invalid share five times in a row.\nBuy a ticket, not a wallet.");
+		alert("🎉 Lottery winner!\nThe random seed gave an invalid share five times in a row.\nBuy a ticket.");
 		return;   // stops the rest of your function
 	  }
+	  
       document.getElementById("new-shares").value = sharesStr.trim();
+	  document.getElementById("new-shares-base58").value = sharesBase58str.trim();
 
-      // (Optional) If you also want to produce zbase32-encoded mnemonics, do it here
-      // document.getElementById("new-shares-zbase32").value = ...
+      // (Optional) If you also want to produce base58-encoded mnemonics, do it here
+      // document.getElementById("new-shares-base58").value = ...
 
     } catch (err) {
       // Surface any unexpected errors in the master secret error pill by default
@@ -185,14 +197,29 @@
 
   function reconstruct() {
     clearReconstructed();
-
+	
+	const recInput = byId("existing-shares").value.trim();
+	if (recInput.length === 0) return;
+	
+	let mnemonics;
+	
+	if (combineMode === "base58") {
+		const base58s = recInput.split("\n").map(m => m.trim()).filter(m => m.length > 0);
+//		console.log("base58s",base58s);
+		mnemonics = base58s.map(converter.base58toSlip39);
+	} else {
+	    mnemonics = recInput.split("\n").map(m => m.trim()).filter(m => m.length > 0);
+	}
+	const mnemonicsStr = mnemonics.join("\n\n");
+	if (combineMode === "base58") decodedMnemonics.value = mnemonicsStr;
+//	console.log("mnemonicsStr",mnemonicsStr);
+/*
     const mnemonicsStr = document.getElementById("existing-shares").value;
-    if (mnemonicsStr.trim().length === 0) return;
 
-    let mnemonics = mnemonicsStr.split("\n")
+    mnemonics = mnemonicsStr.split("\n")
       .map(m => m.trim())
       .filter(m => m.length > 0);
-
+*/
     const passphrase = document.getElementById("decrypter").value;
     let secretBytes;
 
@@ -242,12 +269,14 @@
   const thresholdError    = byId("threshold-error");
 
   const newShares         = byId("new-shares");
-  const newSharesZBase32  = byId("new-shares-zbase32");
+  const newSharesBase58   = byId("new-shares-base58");
 
+  const decodeLabel       = byId("decode-mode");
   const combineRadios     = qsa("input[name='combine-mode']");
 
   const existingShares    = byId("existing-shares");
   const reconstructedErr  = byId("reconstructed-error");
+  const decodedBlock      = byId("decoded-block");
   const decodedMnemonics  = byId("decoded-mnemonics");
 
   const decrypter         = byId("decrypter");
@@ -267,7 +296,7 @@
 
   // passphrase
   passphrase.addEventListener("input", debounce(() => {
-    console.log("passphrase changed:", passphrase.value);
+//    console.log("passphrase changed:", passphrase.value);
     createShares();
   }, 100));
 
@@ -289,12 +318,12 @@
 
   // Existing Shares
   existingShares.addEventListener("input", debounce(() => {
-    console.log("existing-shares input changed:", existingShares.value);
+//    console.log("existing-shares input changed:", existingShares.value);
     reconstruct();
   }, 100));
 
   decrypter.addEventListener("input", debounce(() => {
-    console.log("decrypter input changed:", decrypter.value);
+//    console.log("decrypter input changed:", decrypter.value);
     reconstruct();
   }, 100));
 
@@ -334,9 +363,32 @@
   });
 
   // --- Combine mode ---
+  let combineMode = document.querySelector("input[name='combine-mode']:checked").value;
+//  console.log("startup combineMode",combineMode);
+
   combineRadios.forEach(radio => {
     radio.addEventListener("change", () => {
-      console.log("Combine mode:", radio.value);
+	  combineMode = radio.value;
+      console.log("Combine mode:", combineMode);
+	  
+	  if (combineMode === "mnemonics") {
+        existingShares.placeholder = "Enter your mnemonic shares here, one per line";
+        decodeLabel.textContent = "Mnemonics Input";
+		decodedBlock.style.display = "none";
+      } else if (combineMode === "base58") {
+        existingShares.placeholder = "Enter your Base-58 shares here, one per line";
+        decodeLabel.textContent = "Base-58 Input";
+		decodedBlock.style.display = "block";
+      } else {
+		existingShares.placeholder = "Invalid combine mode detected.";
+		decodeLabel.textContent = "Error!";
+		decodedBlock.style.display = "none";
+	  }
+
+      // Clear outputs when switching modes
+      existingShares.value = "";
+	  decodedMnemonics.value = "";
+      clearReconstructed();
     });
   });
 
