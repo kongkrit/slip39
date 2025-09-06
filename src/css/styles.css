@@ -245,6 +245,17 @@ button:focus-visible {
 .number-control button:first-of-type { border-inline-end: 1px solid var(--border); }
 .number-control button:last-of-type  { border-inline-start: 1px solid var(--border); }
 
+/* Hide default number input spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
 /* fix stepper readout width */
 .shares-threshold-row .number-control input#total-shares,
 .shares-threshold-row .number-control input#threshold {
