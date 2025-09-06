@@ -7,7 +7,7 @@ from io import open
 
 # It removes script and style tags and replaces with the file content.
 
-f = open('src/kslip2.html', "r", encoding="utf-8")
+f = open('src/slip39.html', "r", encoding="utf-8")
 page = f.read()
 f.close()
 
