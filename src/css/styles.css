@@ -302,6 +302,63 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
+/* --- Bootstrap-style radio button group (plain CSS) --- */
+.btn-group {
+  display: inline-flex;
+  border-radius: var(--radius);
+  overflow: hidden; /* clip rounded corners */
+}
+
+/* Robust, accessible "visually hidden" radio inputs */
+.btn-check {
+  position: absolute !important;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  white-space: nowrap;
+  clip-path: inset(50%);
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+}
+
+/* distinct toggle buttons */
+.btn-group { /* layout similar to the strength buttons row */
+  display: flex;
+  gap: var(--space-2);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 4px 12px;
+  min-inline-size: 12ch;
+  line-height: 1.4;
+  background: #0f1216;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);  /* apply full rounding */
+  cursor: pointer;
+  user-select: none;
+  transition: background .2s, border .2s, color .2s;
+}
+
+.btn:hover { background: #232a34; border-color: #3a3f47; }
+
+.btn-check:checked + .btn {
+  background: #525863;
+  border-color: #525863;
+  color: #fff;
+}
+.btn-check:focus-visible + .btn {
+  outline: 2px solid color-mix(in oklab, var(--accent), white 15%);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
+
 }
