@@ -26,10 +26,6 @@
 	if (base58_sha256 !== base58_sha256_actual) {
 		throw new Error (`check:mismatch: base58_sha256 is: ${base58_sha256}, expected: ${base58_sha256_actual}`);
 	} else { console.log("check:base58_sha256 is ok"); }
-	// console.log("slip39_sha256",typeof(slip39_sha256),slip39_sha256);
-	// console.log("base58_sha256",typeof(base58_sha256),base58_sha256);
-	// console.log("wordList.slip39", wordList.slip39);
-	// console.log("wordList.base58", wordList.base58);
 	return 0;
   }
 
@@ -77,12 +73,127 @@
     });
   }
   
+  function intArrayToBigInt(intArray, base) {
+    if (!Array.isArray(intArray)) {
+      throw new TypeError("intArray must be an array of numbers");
+    }
+    if (typeof base !== "number" || base <= 1) {
+      throw new RangeError("base must be a number greater than 1");
+    }
+  
+    let bigInt = 0n;
+    const baseBigInt = BigInt(base);
+  
+    for (let i = 0; i < intArray.length; i++) {
+      const val = BigInt(intArray[i]);
+      if (val < 0n || val >= baseBigInt) {
+        throw new RangeError(`Value ${intArray[i]} at index ${i} is out of range for base ${base}`);
+      }
+      bigInt = bigInt * baseBigInt + val;
+    }
+  
+    return bigInt;
+  }
+
+  function bigIntToIntArray(bigInt, base) {
+    if (typeof bigInt !== "bigint") {
+      throw new TypeError("bigInt must be a BigInt");
+    }
+    if (typeof base !== "number" || base <= 1) {
+      throw new RangeError("base must be a number greater than 1");
+    }
+	
+    const baseBigInt = BigInt(base);
+    const result = [];
+  
+    let n = bigInt;
+    if (n === 0n) return [0];
+  
+    while (n > 0n) {
+      const remainder = n % baseBigInt;
+      result.push(Number(remainder)); // safe if remainder < base
+      n = n / baseBigInt;
+    }
+  
+    return result.reverse(); // most significant digit first
+  }
+  
+  function arraysEqual(a, b) {
+    if (!Array.isArray(a) || !Array.isArray(b)) return false;
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+  
+  function slip39toBase58(phrase) {
+	if (!(typeof phrase === "string" || phrase instanceof String)) {
+	  throw new TypeError("phrase must be a string");
+    }
+	
+	const wordArray   = phrase.split(" ");
+	const valueArray1 = slip39arrayToIndices(wordArray);
+	const bigInt      = intArrayToBigInt(valueArray1, 1024);
+	const valueArray2 = bigIntToIntArray(bigInt, 58);
+	const base58array = indicesToBase58Array(valueArray2);
+	
+	return base58array.join("");
+  }
+  
+  function base58toSlip39(address) {
+	if (!(typeof address === "string" || address instanceof String)) {
+	  throw new TypeError("address must be a string");
+    }
+	
+	const wordArray   = address.split("");
+	const valueArray1 = base58arrayToIndices(wordArray);
+	const bigInt      = intArrayToBigInt(valueArray1, 58);
+	const valueArray2 = bigIntToIntArray(bigInt, 1024);
+	const slip39array = indicesToSlip39Array(valueArray2);
+	
+	return slip39array.join(" ");
+  }
+  
+  function isString(textIn) {
+	if (!(typeof textIn == "string" || textIn instanceof String)) {
+	  throw new TypeError("textIn must be a string");
+	  return false;
+    }
+	return true;
+  }
+	  
+  function conversionOk(textSlip39, textBase58) {
+	
+	isString(textSlip39);
+	isString(textBase58);
+
+    const convSlip39 = base58toSlip39(textBase58);
+	const convBase58 = slip39toBase58(textSlip39);
+	
+	if ((textSlip39 !== convSlip39) || (textBase58 !== convBase58)) {
+		console.log("slip39 input:", textSlip39);
+		console.log("base58 input:", textBase58);
+		console.log("slip39 converted from base58: ",convSlip39);
+		console.log("base58 converted from slip39: ",convBase58);
+		throw new TypeError("slip39 and base58 inputs are not equivalent");
+		return false;
+	}
+	return true;
+  }
+  
   // expose
   window.converter = window.converter || {};
   window.converter.check = check;
   window.converter.slip39arrayToIndices = slip39arrayToIndices;
-  window.converter.indicesToSlip39Array = indicesToSlip39Array;
-  window.converter.base58arrayToIndices = base58arrayToIndices;
-  window.converter.indicesToBase58Array = indicesToBase58Array;
+  // window.converter.indicesToSlip39Array = indicesToSlip39Array;
+  // window.converter.base58arrayToIndices = base58arrayToIndices;
+  // window.converter.indicesToBase58Array = indicesToBase58Array;
+  // window.converter.intArrayToBigInt     = intArrayToBigInt;
+  // window.converter.bigIntToIntArray     = bigIntToIntArray;
+  // window.converter.arraysEqual          = arraysEqual;
+  window.converter.slip39toBase58       = slip39toBase58;
+  window.converter.base58toSlip39       = base58toSlip39;
+  window.converter.conversionOk         = conversionOk;
   
 })();
