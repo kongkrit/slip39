@@ -63,10 +63,12 @@
 
         <h3>Shares</h3>
 
-        <label for="new-shares">Mnemonics</label>
-        <textarea id="new-shares" rows="10" readonly placeholder="Mnemonic Shares will be shown here"></textarea>
+		<div id="mnemonic-block">
+			<label for="new-shares">Mnemonics</label>
+			<textarea id="new-shares" rows="10" readonly placeholder="Mnemonic Shares will be shown here"></textarea>
+		</div>
 		<p></p>
-		<div id="base58-block" style="display:none">
+		<div id="base58-block">
 			<label for="new-shares-base58">Base-58</label>
 			<textarea id="new-shares-base58" rows="10" readonly placeholder="Base-58 Shares will be shown here"></textarea>
 		</div>
@@ -74,15 +76,18 @@
 
       <section id="combine" class="card">
         <h2>Combine Shares</h2>
-        <p id="combine-modes" style="display:none">
-          Recover a master secret from a set of
-          <span>
-            <label><input type="radio" name="combine-mode" value="mnemonics" checked> Mnemonics</label>
-            <label><input type="radio" name="combine-mode" value="base58"> Base-58</label>
-          </span>
-        </p>
+        <div id="combine-modes">
+          <p>Recover a master secret from a set of:</p>
+          <div class="btn-group" role="group" aria-label="Combine mode">
+            <input type="radio" class="btn-check" name="combine-mode" id="mode-mnemonics" value="mnemonics" checked>
+            <label class="btn" for="mode-mnemonics">Mnemonics</label>
+          
+            <input type="radio" class="btn-check" name="combine-mode" id="mode-base58" value="base58">
+            <label class="btn" for="mode-base58">Base-58</label>
+          </div>
+        </div>
 
-        <label for="existing-shares">Mnemonics Input</label>
+        <label id="decode-mode" for="existing-shares">Mnemonics Input</label>
         <textarea id="existing-shares" rows="10" placeholder="Enter your mnemonic shares here, one per line"></textarea>
         <p class="err" id="reconstructed-error"></p>
 
