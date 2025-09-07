@@ -1,5 +1,5 @@
 // conversion-lib.js
-(function () {
+(function (root) {
 
   async function sha256(str) {
     const encoder = new TextEncoder();
@@ -10,6 +10,7 @@
   }
 
   async function check() {
+console.log("check");
 	if (wordList.slip39.length !== 1024) {
 	  throw new Error ("slip39 doesn't contain 1024 words");
 	}
@@ -183,17 +184,17 @@
   }
   
   // expose
-  window.converter = window.converter || {};
-  window.converter.check = check;
-  window.converter.slip39arrayToIndices = slip39arrayToIndices;
-  // window.converter.indicesToSlip39Array = indicesToSlip39Array;
-  // window.converter.base58arrayToIndices = base58arrayToIndices;
-  // window.converter.indicesToBase58Array = indicesToBase58Array;
-  // window.converter.intArrayToBigInt     = intArrayToBigInt;
-  // window.converter.bigIntToIntArray     = bigIntToIntArray;
-  // window.converter.arraysEqual          = arraysEqual;
-  window.converter.slip39toBase58       = slip39toBase58;
-  window.converter.base58toSlip39       = base58toSlip39;
-  window.converter.conversionOk         = conversionOk;
+  root.converter = root.converter || {};
+  root.converter.check = check;
+  root.converter.slip39arrayToIndices = slip39arrayToIndices;
+  // root.converter.indicesToSlip39Array = indicesToSlip39Array;
+  // root.converter.base58arrayToIndices = base58arrayToIndices;
+  // root.converter.indicesToBase58Array = indicesToBase58Array;
+  // root.converter.intArrayToBigInt     = intArrayToBigInt;
+  // root.converter.bigIntToIntArray     = bigIntToIntArray;
+  // root.converter.arraysEqual          = arraysEqual;
+  root.converter.slip39toBase58       = slip39toBase58;
+  root.converter.base58toSlip39       = base58toSlip39;
+  root.converter.conversionOk         = conversionOk;
   
-})();
+})(globalThis);
