@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "scripts": {
     "build:libs": "browserify libs.js --standalone slip39libs > ../src/js/slip39-libs.js",
-    "build:wordlist": "( echo '(function(){'; echo '  \"use strict\";'; grep -A1100 'const WORD_LIST =' ../src/js/slip39-libs.js | sed '/];/q'; cat ../src/js/base58.js; echo; echo '  window.wordList = window.wordList || {};'; echo '  window.wordList.base58 = BASE58_CHARS;'; echo '  window.wordList.slip39 = WORD_LIST;'; echo '})();' ) > ../src/js/wordlist.js",
+    "build:wordlist": "( echo '(function(root){'; echo '  \"use strict\";'; grep -A1100 'const WORD_LIST =' ../src/js/slip39-libs.js | sed '/];/q'; cat ../src/js/base58.js; echo; echo '  root.wordList = window.wordList || {};'; echo '  root.wordList.base58 = BASE58_CHARS;'; echo '  root.wordList.slip39 = WORD_LIST;'; echo '})(globalThis);' ) > ../src/js/wordlist.js",
     "build": "npm run build:libs && npm run build:wordlist"
   },
   "dependencies": {
