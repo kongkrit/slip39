@@ -1,4 +1,4 @@
-(function(){
+(function(root){
   "use strict";
 const WORD_LIST = [
   "academic",
@@ -1028,7 +1028,7 @@ const WORD_LIST = [
 ];
 const BASE58_CHARS = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
-  window.wordList = window.wordList || {};
-  window.wordList.base58 = BASE58_CHARS;
-  window.wordList.slip39 = WORD_LIST;
-})();
+  root.wordList = window.wordList || {};
+  root.wordList.base58 = BASE58_CHARS;
+  root.wordList.slip39 = WORD_LIST;
+})(globalThis);
