@@ -10,7 +10,7 @@
   }
 
   async function check() {
-console.log("check");
+//console.log("check");
 	if (wordList.slip39.length !== 1024) {
 	  throw new Error ("slip39 doesn't contain 1024 words");
 	}
@@ -23,11 +23,11 @@ console.log("check");
 	const base58_sha256_actual = "72cf75f6ffbebe07f71523271916703471c005d39c2630cd63da31b929b6d21f"
 	if (slip39_sha256 !== slip39_sha256_actual) {
 		throw new Error (`check:mismatch: slip39_sha256 is: ${slip39_sha256}, expected: ${slip39_sha256_actual}`);
-	} else { console.log("check:slip39_sha256 is ok"); }
+	}
 	if (base58_sha256 !== base58_sha256_actual) {
 		throw new Error (`check:mismatch: base58_sha256 is: ${base58_sha256}, expected: ${base58_sha256_actual}`);
-	} else { console.log("check:base58_sha256 is ok"); }
-	return 0;
+	}
+	return true;
   }
 
   // Build cached lookup maps once.
@@ -54,6 +54,56 @@ console.log("check");
       if (n < 0 || n >= slip39Words.length) throw new RangeError(`SLIP-39 index ${n} out of range`);
       return slip39Words[n];
     });
+  }
+  
+  function twoBytesHexStringToIntArray(input) {
+    if (typeof input !== "string") {
+      throw new Error("Input must be a string");
+    }
+    if (input.length % 4 !== 0) {
+      throw new Error("Hex string length must be divisible by 4");
+    }
+    if (!/^[0-9a-fA-F]*$/.test(input)) {
+      throw new Error("Invalid hex string");
+    }
+  
+    const result = [];
+    for (let i = 0; i < input.length; i += 4) {
+      const chunk = input.slice(i, i + 4);
+      const value = parseInt(chunk, 16);
+      result.push(value);
+    }
+    return result;
+  }
+
+  function intArrayToTwoBytesHexString(arr) {
+    if (!Array.isArray(arr)) {
+      throw new Error("Input must be an array of numbers");
+    }
+  
+    return arr.map(num => {
+      if (!Number.isInteger(num) || num < 0) {
+        throw new Error("Array must contain non-negative integers");
+      }
+      if (num > 0xFFFF) {
+        throw new Error("Value out of range (must be 0–65535)");
+      }
+      return num.toString(16).padStart(4, "0");
+    }).join("");
+  }
+  
+  function twoBytesHexStringToBase58(str) {
+    const arr1 = twoBytesHexStringToIntArray(str);
+	const big1 = intArrayToBigInt(arr1, 65536);
+	const arr2 = bigIntToIntArray(big1, 58);
+	return indicesToBase58Array(arr2).join("");
+  }
+  
+  function base58ToTwoBytesHexString(str) {
+    const arr1 = base58arrayToIndices(str.split(""));
+	const big1 = intArrayToBigInt(arr1, 58);
+	const arr2 = bigIntToIntArray(big1, 65536);
+	return intArrayToTwoBytesHexString(arr2);
   }
 
   function base58arrayToIndices(chars) {
@@ -196,5 +246,7 @@ console.log("check");
   root.converter.slip39toBase58       = slip39toBase58;
   root.converter.base58toSlip39       = base58toSlip39;
   root.converter.conversionOk         = conversionOk;
+  root.converter.twoBytesHexStringToBase58 = twoBytesHexStringToBase58;
+  root.converter.base58ToTwoBytesHexString = base58ToTwoBytesHexString;
   
 })(globalThis);
