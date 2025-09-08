@@ -9,7 +9,7 @@
 </head>
 <body>
   <header>
-    <h1>SLIP-39 Generator and Recovery</h1>
+    <h1>SLIP-39 Generator and Recovery (Offline)</h1>
     <div class="sub">No network needed. Runs entirely in your browser. Generates <b>SLIP-39</b> <i>M</i>-of-<i>N</i> <b>Master Secret</b> shares (10 bits/word) and recovers secrets from <i>M</i> mnemonics. An optional <b>passphrase</b> is supported and must be the <u>same</u> for both generation and recovery.</div>
 	<div id="integrity-pill" class="pill danger" style="display:none">Integrity compromised – reload the page</div>
   </header>
@@ -30,9 +30,12 @@
           <button id="strength-256" class="generate" data-strength="256">256 bits</button>
         </div>
 
-        <label for="master-secret-hex">Master Secret</label>
+        <label for="master-secret-hex">Master Secret (hex)</label>
         <input id="master-secret-hex" type="text" placeholder="hex string eg 0123456789abcdef0123456789ABCDEF">
         <p class="err" id="master-secret-error"></p>
+		<label for="master-secret-base58">Master Secret (Base58)</label>
+		<input id="master-secret-base58" type="text" readonly placeholder="base58 string [1-9A-HJ-NP-Za-km-z]">
+		<p class="err" id="master-secret-b58-error"></p>
 
         <label for="passphrase">Passphrase (optional)</label>
         <input id="passphrase" type="text" placeholder="eg MySecretPassphrase">
@@ -88,20 +91,22 @@
           </div>
         </div>
 
-        <label id="decode-mode" for="existing-shares">Mnemonics Input</label>
-        <textarea id="existing-shares" rows="10" placeholder="Enter your mnemonic shares here, one per line"></textarea>
-        <p class="err" id="reconstructed-error">&nbsp</p>
+        <label id="decode-mode" for="existing-shares"></label>
+        <textarea id="existing-shares" rows="10"></textarea>
+        <p class="err" id="reconstructed-error"></p>
 
 		<div id="decoded-block">
-			<label id="convert-to" for="decoded-mnemonics">Converted to Base-58</label>
-			<textarea id="decoded-mnemonics" readonly rows="10" placeholder="Decoded mnemonics appear here."></textarea>
+			<label id="convert-to" for="decoded-mnemonics"></label>
+			<textarea id="decoded-mnemonics" readonly rows="10"></textarea>
 		</div>
 
         <label for="decrypter">Passphrase</label>
         <input id="decrypter" type="text">
 
-        <label for="reconstructed-hex">Master Secret</label>
+        <label for="reconstructed-hex">Master Secret (hex)</label>
         <input id="reconstructed-hex" type="text" readonly>
+		<label for="reconstructed-base58">Master Secret (Base58)</label>
+        <input id="reconstructed-base58" type="text" readonly>
       </section>
   </main>
 
