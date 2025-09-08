@@ -16,6 +16,35 @@
     };
   }
 
+  // --- Inputs and textareas ---
+  const masterSecretHex     = byId("master-secret-hex");
+  const masterSecretBase58  = byId("master-secret-base58");
+  const masterSecretError   = byId("master-secret-error");
+  const masterSecret58Error = byId("master-secret-b58-error");
+						    
+  const passphrase          = byId("passphrase");
+  const totalShares         = byId("total-shares");
+  const totalSharesError    = byId("total-shares-error");
+						    
+  const threshold           = byId("threshold");
+  const thresholdError      = byId("threshold-error");
+						    
+  const newShares           = byId("new-shares");
+  const newSharesBase58     = byId("new-shares-base58");
+						    
+  const decodeLabel         = byId("decode-mode");
+  const convertLabel        = byId("convert-to");
+  const combineRadios       = qsa("input[name='combine-mode']");
+						    
+  const existingShares      = byId("existing-shares");
+  const reconstructedErr    = byId("reconstructed-error");
+  const decodedBlock        = byId("decoded-block");
+  const decodedMnemonics    = byId("decoded-mnemonics");
+						    
+  const decrypter           = byId("decrypter");
+  const reconstructedHex    = byId("reconstructed-hex");
+  const reconstructedBase58 = byId("reconstructed-base58");
+
   function bytesToHex(u8) {
     let h = "";
     for (let i = 0; i < u8.length; i++) {
@@ -61,10 +90,11 @@
   }
 
   function clearReconstructed() {
-    document.getElementById("reconstructed-hex").value = "";
-    document.getElementById("reconstructed-error").innerHTML = "&nbsp;";
-//	document.getElementById("reconstructed-error").value = "";
+	reconstructedErr.textContent = "";
+    reconstructedHex.value = "";
+	reconstructedBase58.value = "";
   }
+  clearReconstructed();
 
   function generateMasterSecret(strengthBits) {
     // TODO test crypto.getRandomValues exists
@@ -106,10 +136,16 @@
   }
 
   function masterSecretHexIsOk(masterSecretHex, masterSecretBytes, updateError=true) {
+//console.log(masterSecretHex, masterSecretBytes);
     if (masterSecretHex.length < 32) {
       if (updateError) showMasterSecretError("Master Secret must be at least 128 bits (32 hex chars)");
       return false;
     }
+	if (masterSecretHex.slice(0,4) === "0000") {
+	  if (updateError) showMasterSecretError("Master Secret must not begin with 0000");
+	  masterSecretBase58.value = "";
+	  return false;
+	}
     if (masterSecretBytes.length % 2 !== 0) {
       if (updateError) showMasterSecretError("Master Secret must be an even number of bytes (multiples of 4 hex chars)");
       return false;
@@ -177,7 +213,7 @@
 		tries++;
 	  } while (someFirstIndexIsZero && (tries < 5));
 	  
-	  console.log("tries:",tries);
+//	  console.log("tries:",tries);
 	  if (someFirstIndexIsZero) {
 		alert("🎉 Lottery winner!\nThe random seed gave an invalid share five times in a row.\nBuy a ticket.");
 		return;   // stops the rest of your function
@@ -239,10 +275,11 @@
       document.getElementById("reconstructed-error").textContent = e.message || String(e);
       return;
     }
-	document.getElementById("reconstructed-error").innerHTML = "&nbsp;";
+	reconstructedErr.textContent = "";
 
     const secretHex = bytesToHex(secretBytes);
-    document.getElementById("reconstructed-hex").value = secretHex;
+    reconstructedHex.value = secretHex;
+	reconstructedBase58.value = converter.twoBytesHexStringToBase58(secretHex);
   }
 
   function generateClicked(e) {
@@ -258,7 +295,7 @@
     }
     // generate master secret
     const masterSecretHex = generateMasterSecret(strength);
-    byId("master-secret-hex").value = masterSecretHex;
+	updateMasterSecret(masterSecretHex, true);
     createShares();
   };
 
@@ -267,42 +304,23 @@
   strengthButtons.forEach(btn => {
     btn.addEventListener("click", generateClicked);
   });
+  
+  function updateMasterSecret(hex, updateMasterSecretHex) {
+	if (updateMasterSecretHex) masterSecretHex.value = hex;
+	const b = converter.twoBytesHexStringToBase58(hex);
+	masterSecretBase58.value = b;
+  }
 
-  // --- Inputs and textareas ---
-  const masterSecretHex   = byId("master-secret-hex");
-  const masterSecretError = byId("master-secret-error");
-
-  const passphrase        = byId("passphrase");
-  const totalShares       = byId("total-shares");
-  const totalSharesError  = byId("total-shares-error");
-
-  const threshold         = byId("threshold");
-  const thresholdError    = byId("threshold-error");
-
-  const newShares         = byId("new-shares");
-  const newSharesBase58   = byId("new-shares-base58");
-
-  const decodeLabel       = byId("decode-mode");
-  const convertLabel      = byId("convert-to");
-  const combineRadios     = qsa("input[name='combine-mode']");
-
-  const existingShares    = byId("existing-shares");
-  const reconstructedErr  = byId("reconstructed-error");
-  const decodedBlock      = byId("decoded-block");
-  const decodedMnemonics  = byId("decoded-mnemonics");
-
-  const decrypter         = byId("decrypter");
-  const reconstructedHex  = byId("reconstructed-hex");
-
-  // master-secret-hex
+  // master-secret-hex input
   masterSecretHex.addEventListener("input", debounce(() => {
-    console.log("master-secret-hex changed:", masterSecretHex.value);
     const v = masterSecretHex.value.trim();
+//	console.log("master-secret-hex changed:", v);
     if (/^[0-9a-fA-F]*$/.test(v)) {
       masterSecretError.textContent = "";
     } else {
       masterSecretError.textContent = "Invalid hex string!";
     }
+	updateMasterSecret(v, false);
     createShares();
   }, 100));
 
@@ -314,7 +332,7 @@
 
   // Total Shares
   totalShares.addEventListener("input", debounce(() => {
-    console.log("total-shares changed:", totalShares.value);
+//    console.log("total-shares changed:", totalShares.value);
     const n = parseInt(totalShares.value, 10);
     totalSharesError.textContent = (n > 0) ? "" : "Total shares must be > 0";
     createShares();
@@ -322,7 +340,7 @@
 
   // Threshold
   threshold.addEventListener("input", debounce(() => {
-    console.log("threshold changed:", threshold.value);
+//    console.log("threshold changed:", threshold.value);
     const t = parseInt(threshold.value, 10);
     thresholdError.textContent = (t > 0) ? "" : "Threshold must be > 0";
     createShares();
@@ -376,35 +394,39 @@
 
   // --- Combine mode ---
   let combineMode = document.querySelector("input[name='combine-mode']:checked").value;
-//  console.log("startup combineMode",combineMode);
 
+  function updateCombineUI(mode) {
+    combineMode = mode;
+//    console.log("Combine mode:", combineMode);
+
+    if (combineMode === "mnemonics") {
+      existingShares.placeholder = "Enter your mnemonic shares here, one per line";
+      decodeLabel.textContent = "Mnemonics Input";
+      convertLabel.textContent = "Converted to Base-58";
+	  decodedMnemonics.placeholder = "Decoded Base-58 appear here."
+    } else if (combineMode === "base58") {
+      existingShares.placeholder = "Enter your Base-58 shares here, one per line";
+      decodeLabel.textContent = "Base-58 Input";
+      convertLabel.textContent = "Converted to mnemonics";
+	  decodedMnemonics.placeholder = "Decoded mnemonics appear here."
+    } else {
+      existingShares.placeholder = "Invalid combine mode detected.";
+      decodeLabel.textContent = "Error!";
+      convertLabel.textContent = "Error!";
+    }
+
+    // Clear outputs when switching modes
+    existingShares.value = "";
+    decodedMnemonics.value = "";
+    clearReconstructed();
+  }
+
+  // hook up radios
   combineRadios.forEach(radio => {
-    radio.addEventListener("change", () => {
-	  combineMode = radio.value;
-      console.log("Combine mode:", combineMode);
-	  
-	  if (combineMode === "mnemonics") {
-        existingShares.placeholder = "Enter your mnemonic shares here, one per line";
-        decodeLabel.textContent = "Mnemonics Input";
-		convertLabel.textContent = "Converted to Base-58";
-//		decodedBlock.style.display = "none";
-      } else if (combineMode === "base58") {
-        existingShares.placeholder = "Enter your Base-58 shares here, one per line";
-        decodeLabel.textContent = "Base-58 Input";
-		convertLabel.textContent = "Converted to mnemonics";
-//		decodedBlock.style.display = "block";
-      } else {
-		existingShares.placeholder = "Invalid combine mode detected.";
-		decodeLabel.textContent = "Error!";
-		convertLabel.textContent = "Error!";
-//		decodedBlock.style.display = "none";
-	  }
-
-      // Clear outputs when switching modes
-      existingShares.value = "";
-	  decodedMnemonics.value = "";
-      clearReconstructed();
-    });
+    radio.addEventListener("change", () => updateCombineUI(radio.value));
   });
+
+  // run once on startup
+  updateCombineUI(combineMode);
 
 })();
