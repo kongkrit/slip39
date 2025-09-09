@@ -172,6 +172,19 @@ textarea.small { min-block-size: 70px; }
   resize: none;
 }
 
+/* Focus state: mirror old.css (.form-control:focus)
+   - slightly darker background
+   - slightly brighter border
+   - NO outline ring/glow */
+textarea:focus,
+input[type="text"]:focus {
+  background-color: #1a1a1a;        
+  border-color: #3a3f47;
+  color: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.25); /* soft white glow */
+  outline: none;
+}
+
 /* ---- buttons ---- */
 button {
   appearance: none;
@@ -308,8 +321,8 @@ input[type=number] {
 }
 
 /* ---- accessibility & motion ---- */
-input[type="text"]:focus-visible,
-textarea:focus-visible,
+/* Keep visible focus for links (keyboard nav),
+   but remove the glowing ring from inputs to match old.css */
 a:focus-visible {
   outline: 2px solid color-mix(in oklab, var(--accent), white 10%);
   outline-offset: 2px;
