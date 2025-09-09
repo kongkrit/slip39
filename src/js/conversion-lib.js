@@ -31,11 +31,13 @@
   }
 
   // Build cached lookup maps once.
-  const slip39Words = (window.wordList && window.wordList.slip39) || [];
-  const base58Chars = (window.wordList && window.wordList.base58) || [];
+  const slip39words = (root.wordList && root.wordList.slip39) || [];
+  const base58chars = (root.wordList && root.wordList.base58) || [];
+  const base58text  = base58chars.join("");
+  const base58code0 = base58chars[0];
 
-  const slip39ToIndex = new Map(slip39Words.map((w, i) => [w, i]));
-  const base58ToIndex = new Map(base58Chars.map((c, i) => [c, i]));
+  const slip39ToIndex = new Map(slip39words.map((w, i) => [w, i]));
+  const base58ToIndex = new Map(base58chars.map((c, i) => [c, i]));
   
   // --- Array ↔ Indices mappers ---
   function slip39arrayToIndices(words) {
@@ -51,8 +53,8 @@
     if (!Array.isArray(indices)) throw new TypeError("Expected array of integers");
     return indices.map((n, i) => {
       if (!Number.isInteger(n)) throw new TypeError(`Index at ${i} not integer`);
-      if (n < 0 || n >= slip39Words.length) throw new RangeError(`SLIP-39 index ${n} out of range`);
-      return slip39Words[n];
+      if (n < 0 || n >= slip39words.length) throw new RangeError(`SLIP-39 index ${n} out of range`);
+      return slip39words[n];
     });
   }
   
@@ -60,16 +62,19 @@
     if (typeof input !== "string") {
       throw new Error("Input must be a string");
     }
-    if (input.length % 4 !== 0) {
-      throw new Error("Hex string length must be divisible by 4");
-    }
-    if (!/^[0-9a-fA-F]*$/.test(input)) {
+	if (!/^[0-9a-fA-F]*$/.test(input)) {
       throw new Error("Invalid hex string");
     }
-  
+	const pad = input.length % 4;
+	const needed = 4 - pad;
+    let padded = (pad === 0)? input : input.padStart(input.length + needed, "0");
+//    if (input.length % 4 !== 0) {
+//      throw new Error("Hex string length must be divisible by 4");
+//    }
+
     const result = [];
-    for (let i = 0; i < input.length; i += 4) {
-      const chunk = input.slice(i, i + 4);
+    for (let i = 0; i < padded.length; i += 4) {
+      const chunk = padded.slice(i, i + 4);
       const value = parseInt(chunk, 16);
       result.push(value);
     }
@@ -119,8 +124,8 @@
     if (!Array.isArray(indices)) throw new TypeError("Expected array of integers");
     return indices.map((n, i) => {
       if (!Number.isInteger(n)) throw new TypeError(`Index at ${i} not integer`);
-      if (n < 0 || n >= base58Chars.length) throw new RangeError(`Base58 index ${n} out of range`);
-      return base58Chars[n];
+      if (n < 0 || n >= base58chars.length) throw new RangeError(`Base58 index ${n} out of range`);
+      return base58chars[n];
     });
   }
   
@@ -213,7 +218,12 @@
     }
 	return true;
   }
-	  
+  
+  function isBase58(textIn) {
+	const pattern = new RegExp(`^[${base58text}]+$`);
+	return pattern.test(textIn);
+  }
+
   function conversionOk(textSlip39, textBase58) {
 	
 	isString(textSlip39);
@@ -237,6 +247,7 @@
   root.converter = root.converter || {};
   root.converter.check = check;
   root.converter.slip39arrayToIndices = slip39arrayToIndices;
+  root.converter.base58code0 = base58code0;
   // root.converter.indicesToSlip39Array = indicesToSlip39Array;
   // root.converter.base58arrayToIndices = base58arrayToIndices;
   // root.converter.indicesToBase58Array = indicesToBase58Array;
@@ -245,6 +256,7 @@
   // root.converter.arraysEqual          = arraysEqual;
   root.converter.slip39toBase58       = slip39toBase58;
   root.converter.base58toSlip39       = base58toSlip39;
+  root.converter.isBase58             = isBase58;
   root.converter.conversionOk         = conversionOk;
   root.converter.twoBytesHexStringToBase58 = twoBytesHexStringToBase58;
   root.converter.base58ToTwoBytesHexString = base58ToTwoBytesHexString;
