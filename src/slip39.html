@@ -30,11 +30,11 @@
           <button id="strength-256" class="generate" data-strength="256">256 bits</button>
         </div>
 
-        <label for="master-secret-hex">Master Secret (hex)</label>
+        <label id="master-secret-hex-text" for="master-secret-hex"></label>
         <input id="master-secret-hex" type="text" placeholder="hex string eg 0123456789abcdef0123456789ABCDEF">
-        <p class="err" id="master-secret-error"></p>
-		<label for="master-secret-base58">Master Secret (Base58)</label>
-		<input id="master-secret-base58" type="text" readonly placeholder="base58 string [1-9A-HJ-NP-Za-km-z]">
+        <p class="err" id="master-secret-hex-error"></p>
+		<label for="master-secret-b58">Master Secret (Base58)</label>
+		<input id="master-secret-b58" type="text" placeholder="base58 string [1-9A-HJ-NP-Za-km-z]">
 		<p class="err" id="master-secret-b58-error"></p>
 
         <label for="passphrase">Passphrase (optional)</label>
