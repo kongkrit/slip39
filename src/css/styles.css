@@ -162,7 +162,7 @@ input[type="text"] {
 textarea.small { min-block-size: 70px; }
 
 #master-secret-hex,
-#master-secret-base58,
+#master-secret-b58,
 #passphrase,
 #decrypter,
 #reconstructed-hex,
