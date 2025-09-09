@@ -16,34 +16,38 @@
     };
   }
 
-  // --- Inputs and textareas ---
-  const masterSecretHex     = byId("master-secret-hex");
-  const masterSecretBase58  = byId("master-secret-base58");
-  const masterSecretError   = byId("master-secret-error");
-  const masterSecret58Error = byId("master-secret-b58-error");
-						    
-  const passphrase          = byId("passphrase");
-  const totalShares         = byId("total-shares");
-  const totalSharesError    = byId("total-shares-error");
-						    
-  const threshold           = byId("threshold");
-  const thresholdError      = byId("threshold-error");
-						    
-  const newShares           = byId("new-shares");
-  const newSharesBase58     = byId("new-shares-base58");
-						    
-  const decodeLabel         = byId("decode-mode");
-  const convertLabel        = byId("convert-to");
-  const combineRadios       = qsa("input[name='combine-mode']");
-						    
-  const existingShares      = byId("existing-shares");
-  const reconstructedErr    = byId("reconstructed-error");
-  const decodedBlock        = byId("decoded-block");
-  const decodedMnemonics    = byId("decoded-mnemonics");
-						    
-  const decrypter           = byId("decrypter");
-  const reconstructedHex    = byId("reconstructed-hex");
-  const reconstructedBase58 = byId("reconstructed-base58");
+  // --- DOM elements ---
+  const dom = {
+	strengthButtons     : qsa("button.generate"),
+	masterSecretHexText : byId("master-secret-hex-text"),
+    masterSecretHex     : byId("master-secret-hex"),
+    masterSecretB58     : byId("master-secret-b58"),
+    masterSecretHexError: byId("master-secret-hex-error"),
+    masterSecretB58error: byId("master-secret-b58-error"),
+  				    
+    passphrase          : byId("passphrase"),
+    totalShares         : byId("total-shares"),
+    totalSharesError    : byId("total-shares-error"),
+  				    
+    threshold           : byId("threshold"),
+    thresholdError      : byId("threshold-error"),
+  				    
+    newShares           : byId("new-shares"),
+    newSharesBase58     : byId("new-shares-base58"),
+  				    
+    decodeLabel         : byId("decode-mode"),
+    convertLabel        : byId("convert-to"),
+    combineRadios       : qsa("input[name='combine-mode']"),
+  				    
+    existingShares      : byId("existing-shares"),
+    reconstructedErr    : byId("reconstructed-error"),
+    decodedBlock        : byId("decoded-block"),
+    decodedMnemonics    : byId("decoded-mnemonics"),
+  				    
+    decrypter           : byId("decrypter"),
+    reconstructedHex    : byId("reconstructed-hex"),
+    reconstructedBase58 : byId("reconstructed-base58"),
+  };
 
   function bytesToHex(u8) {
     let h = "";
@@ -71,28 +75,28 @@
     return a;
   }
 
-  function showMasterSecretError(msg) {
-    document.getElementById("master-secret-error").textContent = msg || "";
+  function showmasterSecretHexError(msg) {
+    dom.masterSecretHexError.textContent = msg || "";
   }
   function showTotalSharesError(msg) {
-    document.getElementById("total-shares-error").textContent = msg || "";
+    dom.totalSharesError.textContent = msg || "";
   }
   function showThresholdError(msg) {
-    document.getElementById("threshold-error").textContent = msg || "";
+    dom.thresholdError.textContent = msg || "";
   }
 
   function clearShares() {
-    document.getElementById("new-shares").value = "";
-    document.getElementById("new-shares-base58").value = "";
-    showMasterSecretError(""); 
-    showTotalSharesError("");
-    showThresholdError("");
+    dom.newShares.value = "";
+//    dom.newSharesBase58.value = "";
+//    showmasterSecretHexError(""); 
+//    showTotalSharesError("");
+//    showThresholdError("");
   }
 
   function clearReconstructed() {
-	reconstructedErr.textContent = "";
-    reconstructedHex.value = "";
-	reconstructedBase58.value = "";
+	dom.reconstructedErr.textContent = "";
+    dom.reconstructedHex.value = "";
+	dom.reconstructedBase58.value = "";
   }
   clearReconstructed();
 
@@ -103,6 +107,7 @@
     let data = crypto.getRandomValues(buffer);
     // fill the masterSecret value
     let masterSecret = bytesToHex(data);
+//console.log("masterSecret",masterSecret);
     return masterSecret;
   }
   
@@ -135,22 +140,45 @@
 	return true;
   }
 
-  function masterSecretHexIsOk(masterSecretHex, masterSecretBytes, updateError=true) {
-//console.log(masterSecretHex, masterSecretBytes);
-    if (masterSecretHex.length < 32) {
-      if (updateError) showMasterSecretError("Master Secret must be at least 128 bits (32 hex chars)");
+  function masterSecretHexOk(strFull) {
+//console.log("strFull",strFull);
+	const str = strFull;
+    try {
+      if (!(/^[0-9a-fA-F]*$/.test(str))) {
+      	throw new Error ("Invalid hex string!");
+      }
+      if (str.length < 32) {
+        throw new Error("Master Secret (hex) must be at least 128 bits (32 hex chars)");
+      }
+      if (str.slice(0,4) === "0000") {
+        throw new Error("Master Secret (hex) must not begin with 0000");
+      }
+      if (str.length % 4 !== 0) {
+        throw new Error("Master Secret (hex) must be an even number of bytes (multiples of 4 hex chars)");
+      }
+    } catch (e) {
+//dom.masterSecretB58.value = "";
+      dom.masterSecretHexError.textContent = e.message || String(e);
       return false;
     }
-	if (masterSecretHex.slice(0,4) === "0000") {
-	  if (updateError) showMasterSecretError("Master Secret must not begin with 0000");
-	  masterSecretBase58.value = "";
+	dom.masterSecretHexError.textContent = "";
+	return true;
+  }
+  
+  function masterSecretB58ok(strFull) {
+    const isBase58 = converter.isBase58(strFull);
+//console.log("isBase58", isBase58);
+	try {
+	  if (strFull[0] === converter.base58code0) throw new Error (`Master Secret (Base-58) cannot begin with "${converter.base58code0}"`); 
+	  if (!isBase58) throw new Error ("Master Secret (Base-58) is an invalid Base-58 string");
+	} catch (e) {
+//	  dom.masterSecretHex.value = "";
+//console.log("posting secretB58error", e.message);
+	  dom.masterSecretB58error.textContent = e.message || String(e);
 	  return false;
 	}
-    if (masterSecretBytes.length % 2 !== 0) {
-      if (updateError) showMasterSecretError("Master Secret must be an even number of bytes (multiples of 4 hex chars)");
-      return false;
-    }
-	return true;
+	dom.masterSecretB58error.textContent = "";
+    return isBase58;
   }
 
   function createShares() {
@@ -158,28 +186,29 @@
 
     try {
       // parse parameters
-      const masterSecretHex = document.getElementById("master-secret-hex").value;
-      const masterSecretBytes = hexToBytes(masterSecretHex);
+      const masterSecretHex   = dom.masterSecretHex.value;
+	  const masterSecretB58   = dom.masterSecretB58.value;
 
-      if (!masterSecretHexIsOk(masterSecretHex, masterSecretBytes)) {
-		  return;
-	  }
+	  if (!masterSecretHexOk(masterSecretHex)) { clearShares(); return; }
+	  if (!masterSecretB58ok(masterSecretB58)) { clearShares(); return; }
 
-      const totalSharesStr = document.getElementById("total-shares").value;
-      const totalShares = parseInt(totalSharesStr, 10);
+	  const masterSecretBytes = hexToBytes(masterSecretHex);
 
-      const thresholdStr = document.getElementById("threshold").value;
-      const threshold = parseInt(thresholdStr, 10);
-	  if (!totalSharesAndThresholdAreOk(totalShares, threshold)) {
+      const totalShares  = dom.totalShares.value;
+      const totalSharesV = parseInt(totalShares, 10);
+
+      const threshold  = dom.threshold.value;
+      const thresholdV = parseInt(threshold, 10);
+	  if (!totalSharesAndThresholdAreOk(totalShares, thresholdV)) {
 		  return;
 	  }
 
       // groups: currently 1-of-1 per member, repeated totalShares times
       const groups = [];
-      for (let i = 0; i < totalShares; i++) groups.push([1, 1]);
+      for (let i = 0; i < totalSharesV; i++) groups.push([1, 1]);
 
       // create shares (uses slip39-libs.js)
-      const passphrase = document.getElementById("passphrase").value || "";
+      const passphrase = dom.passphrase.value || "";
       const slip = slip39libs.slip39.fromArray(masterSecretBytes, {
         passphrase,
         threshold,
@@ -213,29 +242,27 @@
 		tries++;
 	  } while (someFirstIndexIsZero && (tries < 5));
 	  
-//	  console.log("tries:",tries);
+//console.log("tries:",tries);
+//console.log("sharesStr",sharesStr);
 	  if (someFirstIndexIsZero) {
 		alert("🎉 Lottery winner!\nThe random seed gave an invalid share five times in a row.\nBuy a ticket.");
 		return;   // stops the rest of your function
 	  }
 	  
-      document.getElementById("new-shares").value = sharesStr.trim();
-	  document.getElementById("new-shares-base58").value = sharesBase58str.trim();
-
-      // (Optional) If you also want to produce base58-encoded mnemonics, do it here
-      // document.getElementById("new-shares-base58").value = ...
+      dom.newShares.value = sharesStr.trim();
+	  dom.newSharesBase58.value = sharesBase58str.trim();
 
     } catch (err) {
       // Surface any unexpected errors in the master secret error pill by default
-      showMasterSecretError(String(err && err.message ? err.message : err));
-      console.error(err);
+      showmasterSecretHexError(String(err && err.message ? err.message : err));
+//      console.error(err);
     }
   }
 
   function reconstruct() {
     clearReconstructed();
 	
-	const recInput = byId("existing-shares").value.trim();
+	const recInput = dom.existingShares.value.trim();
 	if (recInput.length === 0) return;
 	
 	let mnemonics, base58s;
@@ -253,36 +280,28 @@
 	const mnemonicsStr = mnemonics.join("\n\n");
 	const base58Str = base58s.join("\n\n");
 	if (combineMode === "base58") {
-		decodedMnemonics.value = mnemonicsStr;
+		dom.decodedMnemonics.value = mnemonicsStr;
 	} else {
-		decodedMnemonics.value = base58Str;
+		dom.decodedMnemonics.value = base58Str;
 	}
-//	console.log("mnemonicsStr",mnemonicsStr);
-//	console.log("base58Str", base58Str);
-/*
-    const mnemonicsStr = document.getElementById("existing-shares").value;
 
-    mnemonics = mnemonicsStr.split("\n")
-      .map(m => m.trim())
-      .filter(m => m.length > 0);
-*/
-    const passphrase = document.getElementById("decrypter").value;
+    const passphraseText = decrypter.value;
     let secretBytes;
 
     try {
-      secretBytes = slip39libs.slip39.recoverSecret(mnemonics, passphrase);
+      secretBytes = slip39libs.slip39.recoverSecret(mnemonics, passphraseText);
     } catch (e) {
-      document.getElementById("reconstructed-error").textContent = e.message || String(e);
+      dom.reconstructedErr.textContent = e.message || String(e);
       return;
     }
-	reconstructedErr.textContent = "";
+	dom.reconstructedErr.textContent = "";
 
     const secretHex = bytesToHex(secretBytes);
-    reconstructedHex.value = secretHex;
-	reconstructedBase58.value = converter.twoBytesHexStringToBase58(secretHex);
+    dom.reconstructedHex.value = secretHex;
+	dom.reconstructedBase58.value = converter.twoBytesHexStringToBase58(secretHex);
   }
 
-  function generateClicked(e) {
+  function generateStrength(e) {
     // get strength value
     const strengthStr = e.target.getAttribute("data-strength");
     const strength = parseInt(strengthStr);
@@ -295,64 +314,92 @@
     }
     // generate master secret
     const masterSecretHex = generateMasterSecret(strength);
-	updateMasterSecret(masterSecretHex, true);
+	updateMasterSecretHexText(masterSecretHex);
+	updateMasterSecretB58(masterSecretHex, true);
     createShares();
   };
 
   // --- Strength buttons ---
-  const strengthButtons = qsa("button.generate");
-  strengthButtons.forEach(btn => {
-    btn.addEventListener("click", generateClicked);
+  dom.strengthButtons.forEach(btn => {
+    btn.addEventListener("click", generateStrength);
   });
   
-  function updateMasterSecret(hex, updateMasterSecretHex) {
-	if (updateMasterSecretHex) masterSecretHex.value = hex;
+  function updateMasterSecretHexText(v) {
+	const hex = v.trim();
+	const numBits  = hex.length * 4;
+	const numBytes = hex.length * 0.5;
+//console.log(numBytes, numBits);
+	dom.masterSecretHexText.textContent = `Master Secret (hex) - ${numBytes} bytes (${numBits} bits)`;
+  }
+  
+  function updateMasterSecretHex(b58, updateB58) {
+	if (updateB58) dom.masterSecretB58.value = b58;
+	const b = converter.base58ToTwoBytesHexString(b58);
+	dom.masterSecretHex.value = b;
+  }
+  
+  function updateMasterSecretB58(hex, updateHex) {
+	if (updateHex) dom.masterSecretHex.value = hex;
 	const b = converter.twoBytesHexStringToBase58(hex);
-	masterSecretBase58.value = b;
+//console.log(b);
+	dom.masterSecretB58.value = b;
   }
 
   // master-secret-hex input
-  masterSecretHex.addEventListener("input", debounce(() => {
-    const v = masterSecretHex.value.trim();
-//	console.log("master-secret-hex changed:", v);
-    if (/^[0-9a-fA-F]*$/.test(v)) {
-      masterSecretError.textContent = "";
-    } else {
-      masterSecretError.textContent = "Invalid hex string!";
-    }
-	updateMasterSecret(v, false);
-    createShares();
+  dom.masterSecretHex.addEventListener("input", debounce(() => {
+    const v = dom.masterSecretHex.value;
+	updateMasterSecretHexText(v);
+  	try {
+	  updateMasterSecretB58(v, false);
+      if (!masterSecretHexOk(v)) { clearShares(); return; }
+      createShares();
+	} catch (e) {
+	  dom.masterSecretHexError.textContent = e.message || String(e);
+	}
+  }, 100));
+
+  // master-secret-b58 input
+  dom.masterSecretB58.addEventListener("input", debounce(() => {
+    const v = dom.masterSecretB58.value;
+  	try {
+      if (!masterSecretB58ok(v)) { clearShares(); return; }
+      updateMasterSecretHex(v, false);
+	  updateMasterSecretHexText(dom.masterSecretHex.value);
+      createShares();
+	} catch (e) {
+	  dom.masterSecretB58error.textContent = e.message || String(e);
+	}
   }, 100));
 
   // passphrase
-  passphrase.addEventListener("input", debounce(() => {
+  dom.passphrase.addEventListener("input", debounce(() => {
 //    console.log("passphrase changed:", passphrase.value);
     createShares();
   }, 100));
 
   // Total Shares
-  totalShares.addEventListener("input", debounce(() => {
+  dom.totalShares.addEventListener("input", debounce(() => {
 //    console.log("total-shares changed:", totalShares.value);
-    const n = parseInt(totalShares.value, 10);
-    totalSharesError.textContent = (n > 0) ? "" : "Total shares must be > 0";
+    const n = parseInt(dom.totalShares.value, 10);
+    dom.totalSharesError.textContent = (n > 0) ? "" : "Total shares must be > 0";
     createShares();
   }, 1));
 
   // Threshold
-  threshold.addEventListener("input", debounce(() => {
+  dom.threshold.addEventListener("input", debounce(() => {
 //    console.log("threshold changed:", threshold.value);
-    const t = parseInt(threshold.value, 10);
-    thresholdError.textContent = (t > 0) ? "" : "Threshold must be > 0";
+    const t = parseInt(dom.threshold.value, 10);
+    dom.thresholdError.textContent = (t > 0) ? "" : "Threshold must be > 0";
     createShares();
   }, 1));
 
   // Existing Shares
-  existingShares.addEventListener("input", debounce(() => {
+  dom.existingShares.addEventListener("input", debounce(() => {
 //    console.log("existing-shares input changed:", existingShares.value);
     reconstruct();
   }, 100));
 
-  decrypter.addEventListener("input", debounce(() => {
+  dom.decrypter.addEventListener("input", debounce(() => {
 //    console.log("decrypter input changed:", decrypter.value);
     reconstruct();
   }, 100));
@@ -383,10 +430,8 @@
 
     inp.value = v;
 	other.value = +other.value;
-	
-    const hex   = byId('master-secret-hex').value.trim();
-    const bytes = hexToBytes(hex);
-    if (!masterSecretHexIsOk(hex, bytes, false)) return;   // silent abort without updating MasterSecretHex error
+
+    masterSecretHexOk(dom.masterSecretHex.value.trim());
   
     inp.dispatchEvent(new Event('input', { bubbles: true }));
     other.dispatchEvent(new Event('input', { bubbles: true })); // refresh errors
@@ -400,33 +445,35 @@
 //    console.log("Combine mode:", combineMode);
 
     if (combineMode === "mnemonics") {
-      existingShares.placeholder = "Enter your mnemonic shares here, one per line";
-      decodeLabel.textContent = "Mnemonics Input";
-      convertLabel.textContent = "Converted to Base-58";
-	  decodedMnemonics.placeholder = "Decoded Base-58 appear here."
+      dom.existingShares.placeholder = "Enter your mnemonic shares here, one per line";
+      dom.decodeLabel.textContent = "Mnemonics Input";
+      dom.convertLabel.textContent = "Converted to Base-58";
+	  dom.decodedMnemonics.placeholder = "Decoded Base-58 appear here."
     } else if (combineMode === "base58") {
-      existingShares.placeholder = "Enter your Base-58 shares here, one per line";
-      decodeLabel.textContent = "Base-58 Input";
-      convertLabel.textContent = "Converted to mnemonics";
-	  decodedMnemonics.placeholder = "Decoded mnemonics appear here."
+      dom.existingShares.placeholder = "Enter your Base-58 shares here, one per line";
+      dom.decodeLabel.textContent = "Base-58 Input";
+      dom.convertLabel.textContent = "Converted to mnemonics";
+	  dom.decodedMnemonics.placeholder = "Decoded mnemonics appear here."
     } else {
-      existingShares.placeholder = "Invalid combine mode detected.";
-      decodeLabel.textContent = "Error!";
-      convertLabel.textContent = "Error!";
+      dom.existingShares.placeholder = "Invalid combine mode detected.";
+      dom.decodeLabel.textContent = "Error!";
+      dom.convertLabel.textContent = "Error!";
     }
 
     // Clear outputs when switching modes
-    existingShares.value = "";
-    decodedMnemonics.value = "";
+    dom.existingShares.value = "";
+    dom.decodedMnemonics.value = "";
     clearReconstructed();
   }
 
   // hook up radios
-  combineRadios.forEach(radio => {
+  dom.combineRadios.forEach(radio => {
     radio.addEventListener("change", () => updateCombineUI(radio.value));
   });
 
   // run once on startup
   updateCombineUI(combineMode);
+  updateMasterSecretHexText(dom.masterSecretHex.value);
+  if(!masterSecretHexOk(dom.masterSecretHex.value)) clearShares();
 
 })();
