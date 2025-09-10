@@ -1,0 +1,4 @@
+const BASE58_STRING = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const HEX_STRING = "0123456789ABCDEFabcdef";
+
+const BASE58_CHARS = BASE58_STRING.split("");
