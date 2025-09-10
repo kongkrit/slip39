@@ -1026,9 +1026,14 @@ const WORD_LIST = [
   "yoga",
   "zero",
 ];
-const BASE58_CHARS = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
+const BASE58_STRING = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const HEX_STRING = "0123456789ABCDEFabcdef";
+
+const BASE58_CHARS = BASE58_STRING.split("");
 
   root.wordList = window.wordList || {};
+  root.wordList.hexString = HEX_STRING;
+  root.wordList.base58string = BASE58_STRING;
   root.wordList.base58 = BASE58_CHARS;
   root.wordList.slip39 = WORD_LIST;
 })(globalThis);
