@@ -166,7 +166,7 @@ textarea.small { min-block-size: 70px; }
 #passphrase,
 #decrypter,
 #reconstructed-hex,
-#reconstructed-base58 {
+#reconstructed-b58 {
   block-size: 30px;    /* ≈ 1.5em with 14px font */
   min-block-size: auto;
   resize: none;
