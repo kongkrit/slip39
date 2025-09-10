@@ -57,58 +57,60 @@
       return slip39words[n];
     });
   }
-  
-  function twoBytesHexStringToIntArray(input) {
-    if (typeof input !== "string") {
-      throw new Error("Input must be a string");
-    }
-	if (!/^[0-9a-fA-F]*$/.test(input)) {
-      throw new Error("Invalid hex string");
-    }
-	const pad = input.length % 4;
-	const needed = 4 - pad;
+
+  function bytesHexStringToIntArray(input, bytesPerElement) {
+    if (typeof input !== "string") throw new Error("Input must be a string");
+	if (!/^[0-9a-fA-F]*$/.test(input)) throw new Error("Invalid hex string");
+	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
+		throw new Error ("bytesPerElement must be integer 1 or 2");
+	}
+
+    const hexDigits = bytesPerElement * 2;
+	const pad = input.length % hexDigits;
+	const needed = hexDigits - pad;
     let padded = (pad === 0)? input : input.padStart(input.length + needed, "0");
-//    if (input.length % 4 !== 0) {
-//      throw new Error("Hex string length must be divisible by 4");
-//    }
 
     const result = [];
-    for (let i = 0; i < padded.length; i += 4) {
-      const chunk = padded.slice(i, i + 4);
+    for (let i = 0; i < padded.length; i += hexDigits) {
+      const chunk = padded.slice(i, i + hexDigits);
       const value = parseInt(chunk, 16);
       result.push(value);
     }
     return result;
   }
-
-  function intArrayToTwoBytesHexString(arr) {
-    if (!Array.isArray(arr)) {
-      throw new Error("Input must be an array of numbers");
-    }
+  
+  function intArrayToBytesHexString(arr, bytesPerElement) {
+    if (!Array.isArray(arr)) throw new Error("Input must be an array of numbers");
+	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
+		throw new Error ("bytesPerElement must be integer 1 or 2");
+	}
   
     return arr.map(num => {
-      if (!Number.isInteger(num) || num < 0) {
-        throw new Error("Array must contain non-negative integers");
-      }
-      if (num > 0xFFFF) {
-        throw new Error("Value out of range (must be 0–65535)");
-      }
-      return num.toString(16).padStart(4, "0");
+      if (!Number.isInteger(num) || num < 0) throw new Error("Array must contain non-negative integers");
+	  const max = 256 ** bytesPerElement - 1;
+      if (num > max) throw new Error(`Value out of range (must be 0–${max}`);
+      return num.toString(16).padStart(bytesPerElement * 2, "0");
     }).join("");
   }
-  
-  function twoBytesHexStringToBase58(str) {
-    const arr1 = twoBytesHexStringToIntArray(str);
-	const big1 = intArrayToBigInt(arr1, 65536);
+
+  function bytesHexStringToBase58(str, bytesPerElement) {
+	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
+	  throw new Error ("bytesPerElement must be integer 1 or 2");
+	}
+    const arr1 = bytesHexStringToIntArray(str, bytesPerElement);
+	const big1 = intArrayToBigInt(arr1, 256 ** bytesPerElement);
 	const arr2 = bigIntToIntArray(big1, 58);
 	return indicesToBase58Array(arr2).join("");
   }
   
-  function base58ToTwoBytesHexString(str) {
+  function base58ToBytesHexString(str, bytesPerElement) {
+	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
+	  throw new Error ("bytesPerElement must be integer 1 or 2");
+	}
     const arr1 = base58arrayToIndices(str.split(""));
 	const big1 = intArrayToBigInt(arr1, 58);
-	const arr2 = bigIntToIntArray(big1, 65536);
-	return intArrayToTwoBytesHexString(arr2);
+	const arr2 = bigIntToIntArray(big1, 256 ** bytesPerElement);
+	return intArrayToBytesHexString(arr2, bytesPerElement);
   }
 
   function base58arrayToIndices(chars) {
@@ -213,7 +215,6 @@
   
   function isString(textIn) {
 	if (!(typeof textIn == "string" || textIn instanceof String)) {
-	  throw new TypeError("textIn must be a string");
 	  return false;
     }
 	return true;
@@ -237,7 +238,6 @@
 		console.log("base58 input:", textBase58);
 		console.log("slip39 converted from base58: ",convSlip39);
 		console.log("base58 converted from slip39: ",convBase58);
-		throw new TypeError("slip39 and base58 inputs are not equivalent");
 		return false;
 	}
 	return true;
@@ -258,7 +258,7 @@
   root.converter.base58toSlip39       = base58toSlip39;
   root.converter.isBase58             = isBase58;
   root.converter.conversionOk         = conversionOk;
-  root.converter.twoBytesHexStringToBase58 = twoBytesHexStringToBase58;
-  root.converter.base58ToTwoBytesHexString = base58ToTwoBytesHexString;
+  root.converter.bytesHexStringToBase58 = bytesHexStringToBase58;
+  root.converter.base58ToBytesHexString = base58ToBytesHexString;
   
 })(globalThis);
