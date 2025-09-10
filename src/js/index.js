@@ -7,7 +7,7 @@
   const byId = id => document.getElementById(id);
   const qsa = sel => Array.from(document.querySelectorAll(sel));
 
-  // --- Debounce helper ---
+  // debounce wrapper
   function debounce(fn, delay = 100) {
     let t;
     return (...args) => {
@@ -252,15 +252,20 @@
 
     let mnemonics, base58s;
 
-    if (combineMode === "base58") {
-        base58s = recInput.split("\n").map(m => m.trim()).filter(m => m.length > 0);
-//      console.log("base58s",base58s);
-        mnemonics = base58s.map(converter.base58toSlip39);
-    } else {
-        mnemonics = recInput.split("\n").map(m => m.trim()).filter(m => m.length > 0);
-//      console.log("mnemonics", mnemonics);
-        base58s = mnemonics.map(converter.slip39toBase58);
-    }
+    try {
+      if (combineMode === "base58") {
+          base58s = recInput.split("\n").map(m => m.trim()).filter(m => m.length > 0);
+          mnemonics = base58s.map(converter.base58toSlip39);
+      } else {
+          mnemonics = recInput.split("\n").map(m => m.trim()).filter(m => m.length > 0);
+          base58s = mnemonics.map(converter.slip39toBase58);
+      }
+	} catch (e) {
+      dom.reconstructedErr.textContent = e.message || String(e);
+	  dom.reconstructedHex.value = "";
+	  dom.reconstructedBase58.value = "";
+	  return;
+	}
 
     const mnemonicsStr = mnemonics.join("\n\n");
     const base58Str = base58s.join("\n\n");
@@ -342,23 +347,40 @@
     dom.masterSecretB58.value = b;
   }
 
-  // master-secret-hex input
-  dom.masterSecretHex.addEventListener("input", debounce(() => {
-    const v = dom.masterSecretHex.value;
+  // --- master-secret-hex input ---
+  const filterNotHex = new RegExp(`[^${wordList.hexString}]`, "g");
+  dom.masterSecretHex.addEventListener("input", e => {
+    let v = e.target.value.trim();
+	v = v.replace(filterNotHex, "").toLowerCase();
+    e.target.value = v;
+	
+	debouncedMasterSecretHexInput(v);
+  });
+  
+  const debouncedMasterSecretHexInput = debounce(v => {
     updateHexText(v, dom.masterSecretHexText);
     try {
       updateMasterSecretB58(v, false);
-      if (checkMasterSecretHex(v) !== "") { clearShares(); return; }
+	  const vBlank = (v === "");
+	  const vError = checkMasterSecretHex(v);
+      if (vError !== "" || vBlank) { clearShares(); return; }
       createShares();
     } catch (e) {
       dom.masterSecretHexError.textContent = e.message || String(e);
     }
-  }, 100));
+  }, 100);
 
-  // master-secret-b58 input
-  dom.masterSecretB58.addEventListener("input", debounce(() => {
-    const v = dom.masterSecretB58.value;
-//console.log("L00", v.length);
+  // --- master-secret-b58 input ---
+  const filterNotB58 = new RegExp(`[^${wordList.base58string}]`, "g");
+  dom.masterSecretB58.addEventListener("input", e => {
+	let v = e.target.value.trim();
+	v = v.replace(filterNotB58, "");
+	e.target.value = v;
+	
+	debouncedMasterSecretB58Input(v);
+  });
+  
+  const debouncedMasterSecretB58Input = debounce(v => {
 	if (v.length > 0) {
       try {
         if (checkMasterSecretB58(v) !== "") { clearShares(); return; }
@@ -373,7 +395,7 @@
 	  updateMasterSecretHex("", false);
 	  updateHexText(dom.masterSecretHex.value, dom.masterSecretHexText);
 	}
-  }, 100));
+  }, 100);
 
   // passphrase
   dom.passphrase.addEventListener("input", debounce(() => {
@@ -397,9 +419,11 @@
     createShares();
   }, 1));
 
-  // Existing Shares
+  // --- Existing Shares Input ---
   dom.existingShares.addEventListener("input", debounce(() => {
-//    console.log("existing-shares input changed:", existingShares.value);
+//console.log("combineMode",combineMode);
+//console.log("existing-shares input changed:", dom.existingShares.value);
+
     reconstruct();
   }, 100));
 
