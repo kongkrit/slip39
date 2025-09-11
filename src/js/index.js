@@ -511,7 +511,7 @@
     v += step;
 
     /* ---- clamp rules ---- */
-    if (v < 1) v = 1;                        // total-shares and threshold must be both >=1
+    if (v < 2) v = 2;                        // total-shares and threshold must be both >=2
     if (id === 'total-shares') {
       if (v > MAX_SHARES) v = MAX_SHARES;    // total-shares must be <= MAX_SHARES
       // if we shrink total-shares below threshold, pull threshold down too
