@@ -9,6 +9,7 @@ from io import open
 #   - <script src="..."></script>               → <script>...</script>
 #   - <link rel="stylesheet" href="...">        → <style>...</style>
 #   - <link rel="icon" href="...svg" ...>       → inline raw SVG + tiny JS to set favicon (no Base64, no URL-encoding)
+#   - <template id="...svg..." href="path/to/icon.svg"> → inline raw SVG
 # The output is fully self-contained and does not depend on files in "src/".
 # ------------------------------------------------------------
 
@@ -103,6 +104,48 @@ icon_link_re = re.compile(
 
 # Replace all favicon links with the inline SVG + JS approach
 page = icon_link_re.sub(_inline_favicon_replacer, page)
+
+# ------------------------------------------------------------
+# Inline <template id="...svg..." href="path/to/icon.svg">…</template>
+# - Keeps source HTML clean by pointing to files via href
+# - Build output contains raw SVG text inside the template
+# ------------------------------------------------------------
+def _inline_svg_templates(page_html: str) -> str:
+    # Matches: <template id="something" href="path/to/file.svg">...</template>
+    tpl_re = re.compile(
+        r"""<template\s+([^>]*?)\bhref=["']([^"']+?\.svg)["']([^>]*)>(.*?)</template>""",
+        re.IGNORECASE | re.DOTALL,
+    )
+
+    def _read_svg(src_path: str) -> str:
+        filename = os.path.join("src", src_path)
+        with open(filename, "r", encoding="utf-8") as s:
+            svg_text = s.read()
+        # Trim potential BOM and XML declaration
+        if svg_text.startswith("\ufeff"):
+            svg_text = svg_text.lstrip("\ufeff")
+        svg_text = re.sub(r'^\s*<\?xml[^>]*>\s*', '', svg_text)
+        return svg_text
+
+    def _repl(m: re.Match) -> str:
+        pre_attrs, href, post_attrs, _inner = m.groups()
+        try:
+            raw = _read_svg(href)
+        except FileNotFoundError:
+            # If file missing, leave original tag unchanged
+            return m.group(0)
+        # Remove href=... from attributes in the output template
+        cleaned_attrs = (pre_attrs + " " + post_attrs).strip()
+        cleaned_attrs = re.sub(r'''\s*href=["'][^"']+?["']''', '', cleaned_attrs, flags=re.IGNORECASE)
+        cleaned_attrs = re.sub(r'\s+', ' ', cleaned_attrs).strip()
+        if cleaned_attrs:
+            return f"<template {cleaned_attrs}>{raw}</template>"
+        else:
+            return f"<template>{raw}</template>"
+
+    return tpl_re.sub(_repl, page_html)
+
+page = _inline_svg_templates(page)
 
 # ------------------------------------------------------------
 # Write the standalone HTML output
