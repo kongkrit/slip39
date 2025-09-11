@@ -26,6 +26,7 @@
     masterSecretB58error: byId("master-secret-b58-error"),
 
     passphrase          : byId("passphrase"),
+	passphraseShow      : byId("passphrase-show"),
     totalShares         : byId("total-shares"),
     totalSharesError    : byId("total-shares-error"),
 
@@ -45,11 +46,72 @@
     decodedMnemonics    : byId("decoded-mnemonics"),
 
     decrypter           : byId("decrypter"),
+	decrypterShow       : byId("decrypter-show"),
 	reconstructedHexText: byId("reconstructed-hex-text"),
     reconstructedHex    : byId("reconstructed-hex"),
     reconstructedBase58 : byId("reconstructed-b58"),
   };
 
+  // --- Show/Hide passphrase controls ---
+  // ---------- Icon URLs from <template> (flattened build) ----------
+  function svgTemplateUrl(id) {
+//console.log("L20",id);
+    const tpl = document.getElementById(id);
+//console.log("L22",tpl);
+//console.log("L26",tpl.innerHTML);
+
+    if (!tpl) return null;
+    // Inlined by your Python bundler: raw SVG markup inside <template>
+    const svgText = tpl.innerHTML || "";
+    const trimmed = svgText.trim();
+//console.log("L21",trimmed);
+    if (!trimmed) return null;
+    try {
+      return URL.createObjectURL(new Blob([trimmed], { type: "image/svg+xml" }));
+    } catch { return null; }
+  }
+
+  // Build Blob URLs if templates are present (flattened build).
+  // In unflattened/dev, these will be null and we’ll fall back to file paths.
+  const __eyeURL    = svgTemplateUrl("icon-eye");
+  const __eyeOffURL = svgTemplateUrl("icon-eye-off");
+
+  // Prefer template-derived Blob URLs when present (flattened build),
+  // otherwise use file paths (unflattened/dev).
+  const EYE     = (__eyeURL    || (window.__ICON_URLS && window.__ICON_URLS.eye))    || 'icons/eye.svg';
+  const EYE_OFF = (__eyeOffURL || (window.__ICON_URLS && window.__ICON_URLS.eyeOff)) || 'icons/eye-off.svg';
+
+  function wireToggle(input, btn) {
+    if (!input || !btn) return;
+    const img = btn.querySelector('img');
+
+    // sync UI from current input.type
+    const sync = () => {
+      const showing = input.type === 'text';
+      if (img) img.src = showing ? EYE_OFF : EYE;
+      btn.setAttribute('aria-label', showing ? 'Hide passphrase' : 'Show passphrase');
+    };
+    sync();
+
+    const toggle = () => {
+      input.type = (input.type === 'password') ? 'text' : 'password';
+      sync();
+      input.focus({ preventScroll: true });
+      const v = input.value; try { input.setSelectionRange(v.length, v.length); } catch {}
+    };
+
+    // keep focus on the input; support keyboard
+    btn.addEventListener('mousedown', e => e.preventDefault());
+    btn.addEventListener('click', toggle);
+    btn.addEventListener('keydown', e => {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+    });
+  }
+
+  wireToggle(dom.passphrase, dom.passphraseShow);
+  wireToggle(dom.decrypter,  dom.decrypterShow);
+  
+  // --- Utility Functons ---
   function bytesToHex(u8) {
     let h = "";
     for (let i = 0; i < u8.length; i++) {
@@ -144,14 +206,14 @@
     const str = strFull;
 	let text;
 	
-    if (str.length === 0) text = "";
+    if (str.length === 0) text = "EMPTY";
     else if (!(/^[0-9a-fA-F]*$/.test(str))) text = "Invalid hex string!";
     else if (str.slice(0,2) === "00") text = "Master Secret (hex) must not begin with 00";
     else if (str.length < 32) text = "Master Secret (hex) must be at least 128 bits (32 hex chars)";
     else if (str.length % 4 !== 0) text = "Master Secret (hex) must be an even number of bytes (multiples of 4 hex chars)";
 	else text = "";
     
-	dom.masterSecretHexError.textContent = text;
+	dom.masterSecretHexError.textContent = (text === "EMPTY")? "" : text;
 //console.log("L01",text);
     return text;
   }
@@ -160,12 +222,12 @@
 	const str = strFull;
 	let text;
 	
-	if (str.length === 0) text = "";
+	if (str.length === 0) text = "EMPTY";
 	else if (str[0] === converter.base58code0) text = `Master Secret (Base-58) cannot begin with "${converter.base58code0}"`;
     else if (!converter.isBase58(str)) text = "Master Secret (Base-58) is an invalid Base-58 string";
 	else text = "";
 
-    dom.masterSecretB58error.textContent = text;
+    dom.masterSecretB58error.textContent = (text === "EMPTY")? "" : text;
     return text;
   }
 
@@ -179,7 +241,9 @@
 
       const checkHex = checkMasterSecretHex(masterSecretHex);
 	  const checkB58 = checkMasterSecretB58(masterSecretB58);
-      if (checkHex !== "" || checkB58) { clearShares(); return; }
+//console.log("L10", checkHex);
+//console.log("L11", checkB58);
+      if (checkHex !== "" || checkB58 !== "") { clearShares(); return; }
 
       const masterSecretBytes = hexToBytes(masterSecretHex);
 
@@ -502,8 +566,8 @@
   // run once on startup
   updateCombineUI(combineMode);
   updateHexText(dom.masterSecretHex.value, dom.masterSecretHexText);
-//console.log("L02", dom.reconstructedHex.value);
   updateHexText(dom.reconstructedHex.value, dom.reconstructedHexText);
+  if(checkMasterSecretB58(dom.masterSecretB58.value) !== "") clearShares();
   if(checkMasterSecretHex(dom.masterSecretHex.value) !== "") clearShares();
 
 })();
