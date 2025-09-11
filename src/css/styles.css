@@ -147,7 +147,8 @@ label { display: block; margin-block: 6px; }
 
 /* ---- form fields ---- */
 textarea,
-input[type="text"] {
+input[type="text"],
+input[type="password"] {
   inline-size: 100%;
   min-block-size: 120px;
   padding: 10px 12px;
@@ -172,12 +173,37 @@ textarea.small { min-block-size: 70px; }
   resize: none;
 }
 
-/* Focus state: mirror old.css (.form-control:focus)
+/* input button on right */
+.input-with-btn {
+  display: flex;
+  align-items: center;
+}
+.input-with-btn input {
+  flex: 1;
+  min-inline-size: 0; /* let it shrink */
+}
+.input-with-btn button {
+  inline-size: 32px;
+  block-size: 30px;
+  padding: 0;
+  margin-inline-start: 8px;
+}
+/* scale icons inside input buttons */
+.input-with-btn button img {
+  inline-size: 1.2em;  /* roughly text size */
+  block-size: auto;
+  vertical-align: middle; /* center with text line box */
+  position: relative;
+  /* top: 1px; small downward nudge */
+}
+
+/* Focus state
    - slightly darker background
    - slightly brighter border
    - NO outline ring/glow */
 textarea:focus,
-input[type="text"]:focus {
+input[type="text"]:focus,
+input[type="password"]:focus {
   background-color: #1a1a1a;        
   border-color: #3a3f47;
   color: #fff;
