@@ -6,9 +6,7 @@
   <title>SLIP-39 Generator and Recovery (Offline)</title>
   <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/styles.css">
-  
-  <template id="icon-eye" href="icons/eye.svg"></template>
-  <template id="icon-eye-off" href="icons/eye-off.svg"></template>
+
 </head>
 <body>
   <header>
@@ -44,7 +42,7 @@
       <div class="input-with-btn">
         <input id="passphrase" type="password" placeholder="eg MySecretPassphrase" autocomplete="off"
 		       autocapitalize="off" spellcheck="false" inputmode="text">
-        <button id="passphrase-show" type="button" aria-label="Show passphrase">
+        <button id="passphrase-toggle" type="button" aria-label="Show passphrase">
           <img alt="">
         </button>
       </div>
@@ -112,7 +110,7 @@
       <label for="decrypter">Passphrase</label>
       <div class="input-with-btn">
         <input id="decrypter" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text">
-        <button id="decrypter-show" type="button" aria-label="Show passphrase">
+        <button id="decrypter-toggle" type="button" aria-label="Show passphrase">
           <img alt="">
         </button>
       </div>
@@ -124,6 +122,8 @@
     </section>
   </main>
 
+  <script src="icons/eye-open.js"></script>
+  <script src="icons/eye-closed.js"></script>
   <script src="js/slip39-libs.js"></script>
   <script src="js/wordlist.js"></script>
   <script src="js/converter.js"></script>
