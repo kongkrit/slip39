@@ -11,15 +11,22 @@
 <body>
   <header>
     <h1>SLIP-39 Generator and Recovery (Offline)</h1>
-    <div class="sub">Runs entirely offline in your browser. Generates <b>SLIP-39</b> <i>M</i>-of-<i>N</i> <b>Master Secret</b> shares (10 bits/word) and recovers secrets from <i>M</i> mnemonics. An <i>optional</i> <b>passphrase</b> can be set during creation and must be re-entered for recovery.</div>
+    <div class="sub">Runs entirely offline in your browser. Generates <b>SLIP-39</b> <i>M-of-N</i> <b>Master Secret</b> shares (10 bits/word) and recovers secrets from <i>M</i>&nbsp;mnemonics. An <i>optional</i> <b>passphrase</b> can be set during creation and must be re-entered for recovery.</div>
     <div id="integrity-pill" class="pill danger" style="display:none">Integrity compromised – reload the page</div>
   </header>
   <main class="grid">
+
+    <!-- Card1 : Create -->
+	
     <section id="create" class="card">
-      <h2>Create Shares</h2>
-      <p class="note-text">Create a new secret or split an existing one into mnemonic shares.<br>
-         <a href="#combine">See the 'Combine' section below to combine existing shares.</a>
-      </p>
+	<details open>
+	  <summary>
+	    <div id="create-card-summary" class="summary-text">
+          <h2 class="summary-text">Create Shares</h2>
+          <p class="note-text">Create a new secret or split an existing one into mnemonic shares.<br>
+		  See the <a href="#combine">Combine shares</a> section below to combine existing shares.</p>
+		</div>
+	  </summary>
 
       <h3>Secret</h3>
       <p>Securely generate random master secret with strength of:</p>
@@ -71,8 +78,19 @@
               <p class="note">The number of shares needed to reconstruct the master secret.</p>
           </div>
       </div>
+	</details>
+	</section>
 
-      <h3>Shares</h3>
+    <!-- Card 2: Created Shares -->
+	
+    <section id="create" class="card">
+	<details open>
+	  <summary>
+	    <div id="create-card-summary" class="summary-text">
+          <h2 class="summary-text">Created Shares</h2>
+		  <p class="note-text">Shares created by parameters from <i>Create</i> section</p>
+		</div>
+	  </summary>
 
       <div id="mnemonic-block">
           <label for="new-shares">Mnemonics</label>
@@ -83,12 +101,23 @@
           <label for="new-shares-base58">Base-58</label>
           <textarea id="new-shares-base58" rows="10" readonly placeholder="Base-58 Shares will be shown here"></textarea>
       </div>
-    </section>
+    </details>
+	</section>
+	
+	<!-- Card 3: Combine -->
 
     <section id="combine" class="card">
-      <h2>Combine Shares</h2>
+	<details open>
+	  <summary>
+	    <div id="combine-card-summary" class="summary-text">
+          <h2 class="summary-text">Combine Shares</h2>
+		  <p class="note-text">Input created shares and optional passphrase to recover the master secret</p>
+	    </div>
+	  </summary>
+	  
       <div id="combine-modes">
-        <p>Recover a master secret from a set of:</p>
+	    <p></p>
+	    <p>Recover a master secret from a set of:</p>
         <div class="btn-group" role="group" aria-label="Combine mode">
           <input type="radio" class="btn-check" name="combine-mode" id="mode-mnemonics" value="mnemonics" checked>
           <label class="btn" for="mode-mnemonics">Mnemonics</label>
@@ -114,11 +143,25 @@
           <img alt="">
         </button>
       </div>
+	</details>
+    </section>
+	
+	<!-- Card 4: Result -->
 
+    <section id="result" class="card">
+	<details open>
+	  <summary>
+	    <div id="result-card-summary" class="summary-text">
+          <h2 class="summary-text">Recovered Master Secret</h2>
+		  <p class="note-text">Master Secret recovered from shares and optional passphrase</p>
+	    </div>
+	  </summary>
+	  
       <label id="reconstructed-hex-text" for="reconstructed-hex"></label>
       <input id="reconstructed-hex" type="text" readonly>
       <label for="reconstructed-b58">Master Secret (Base58)</label>
       <input id="reconstructed-b58" type="text" readonly>
+	</details>
     </section>
   </main>
 
