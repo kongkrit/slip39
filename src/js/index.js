@@ -225,7 +225,7 @@
       const passphrase = dom.passphrase.value || "";
       const slip = slip39libs.slip39.fromArray(masterSecretBytes, {
         passphrase,
-        threshold,
+        thresholdV,
         groups,
       });
 
@@ -242,14 +242,14 @@
           const phraseText = mnemonics[0];
           const phrase = phraseText.split(" ");
           const base58text = converter.slip39toBase58(phraseText);
-          // console.log("phraseText",phraseText);
-          // console.log("base58text",base58text);
+// console.log("phraseText",phraseText);
+// console.log("base58text",base58text);
           if (!converter.conversionOk(phraseText, base58text)) return;
 
           const firstMnemonic = phrase[0];
           const firstIndex = converter.slip39arrayToIndices([firstMnemonic])[0];
           if (firstIndex < 1) someFirstIndexIsZero = true;
-          //console.log("firstMnemonic:",firstMnemonic," firstIndex:",firstIndex);
+//console.log("firstMnemonic:",firstMnemonic," firstIndex:",firstIndex);
           sharesStr += mnemonics + "\n\n";
           sharesBase58str += base58text + "\n\n";
         }
@@ -472,7 +472,7 @@
     v += step;
 
     /* ---- clamp rules ---- */
-    if (v < 2) v = 2;                        // total-shares and threshold must be both >=2
+    if (v < 1) v = 1;                        // total-shares and threshold must be both >=1
     if (id === 'total-shares') {
       if (v > MAX_SHARES) v = MAX_SHARES;    // total-shares must be <= MAX_SHARES
       // if we shrink total-shares below threshold, pull threshold down too
