@@ -189,12 +189,11 @@ textarea.small { min-block-size: 70px; }
   margin-inline-start: 8px;
 }
 /* scale icons inside input buttons */
-.input-with-btn button img {
-  inline-size: 1.2em;  /* roughly text size */
+.input-with-btn button svg {
+  inline-size: 1.4em;  
   block-size: auto;
-  vertical-align: middle; /* center with text line box */
+  vertical-align: middle; 
   position: relative;
-  /* top: 1px; small downward nudge */
 }
 
 /* Focus state
