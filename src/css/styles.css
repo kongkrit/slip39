@@ -50,6 +50,12 @@ h1 {
   font-size: clamp(18px, 16px + 0.5vw, 22px);
 }
 
+/* h2.note-text { margin-block-end: 0px; } */
+h2.summary-text {
+  line-height: 1.2;
+  margin-block-end: 4px;
+}
+
 h3 { margin-block: 8px 0; }
 
 .sub,
@@ -64,6 +70,7 @@ h3 { margin-block: 8px 0; }
 .sub { font-size: var(--fz-xs); }
 .note { font-size: var(--fz-xs); }
 .note-text { font-size: var(--fz-sm); line-height: 1.4; }
+p.note-text { line-height: 1.4; }
 .tiny { font-size: 11px; }
 .footer { font-size: var(--fz-xs); margin-block-start: 10px; }
 
@@ -106,18 +113,6 @@ p { margin-block: 0 var(--space-2); }
 a { color: var(--accent); text-decoration: none; }
 label { display: block; margin-block: 6px; }
 
-.mono { font-family: var(--ff-mono); }
-
-.ok { color: var(--ok); }
-.warn { color: var(--warn); }
-.err {
-  margin-block: 6px;
-  font-size: var(--fz-xs);
-  line-height: 1.3;
-  color: var(--err);
-}
-.err:empty { display: none; }
-
 /* ---- cards ---- */
 .card {
   background: var(--card);
@@ -144,6 +139,55 @@ label { display: block; margin-block: 6px; }
   padding: 0 0 0 4px;
   max-width: max-content;  /* ensure it hugs content */
 }
+
+/* ---- cards summary ---- */
+summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline; /* align chevron to h3 baseline */
+  gap: .5em;
+}
+.summary-text {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- summary-text h3 and p have minimal vertical pad --- */
+.summary-text > h2,
+.summary-text > p {
+  margin-block: 0em;
+}
+
+summary::-webkit-details-marker { display: none; }
+
+summary::before {
+  content: ">";
+  color: var(--accent);
+  font-family: monospace;
+  font-size: 1.2em;
+  font-weight: 600;
+  line-height: 1;
+  position: relative;
+  top: -0.2em;
+  transition: transform .1s;
+}
+details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+
+.mono { font-family: var(--ff-mono); }
+
+.ok { color: var(--ok); }
+.warn { color: var(--warn); }
+.err {
+  margin-block: 6px;
+  font-size: var(--fz-xs);
+  line-height: 1.3;
+  color: var(--err);
+}
+.err:empty { display: none; }
 
 /* ---- form fields ---- */
 textarea,
