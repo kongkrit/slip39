@@ -208,25 +208,25 @@
 
       const masterSecretBytes = hexToBytes(masterSecretHex);
 
-      const totalShares  = dom.totalShares.value;
-      const totalSharesV = parseInt(totalShares, 10);
+      const totalShares  = parseInt(dom.totalShares.value, 10);
 
-      const threshold  = dom.threshold.value;
-      const thresholdV = parseInt(threshold, 10);
-      if (!totalSharesAndThresholdAreOk(totalShares, thresholdV)) {
+      const threshold  = parseInt(dom.threshold.value, 10);
+//console.log("threshold",threshold);
+//console.log("totalShares",totalShares);
+      if (!totalSharesAndThresholdAreOk(totalShares, threshold)) {
           return;
       }
 
       // groups: currently 1-of-1 per member, repeated totalShares times
       const groups = [];
-      for (let i = 0; i < totalSharesV; i++) groups.push([1, 1]);
+      for (let i = 0; i < totalShares; i++) groups.push([1, 1]);
 
       // create shares (uses slip39-libs.js)
       const passphrase = dom.passphrase.value || "";
       const slip = slip39libs.slip39.fromArray(masterSecretBytes, {
-        passphrase,
-        thresholdV,
-        groups,
+        passphrase: passphrase,
+        threshold: threshold,
+        groups: groups,
       });
 
       // show in the UI
@@ -480,7 +480,7 @@
     } else {                                 // threshold
       if (v > +other.value) v = +other.value; // threshold must be <= total-shares
     }
-
+//console.log("id",id); console.log("v", v); console.log("otherId", otherId);
     inp.value = v;
     other.value = +other.value;
 
