@@ -26,7 +26,7 @@
     masterSecretB58error: byId("master-secret-b58-error"),
 
     passphrase          : byId("passphrase"),
-	passphraseShow      : byId("passphrase-show"),
+	passphraseToggle    : byId("passphrase-toggle"),
     totalShares         : byId("total-shares"),
     totalSharesError    : byId("total-shares-error"),
 
@@ -46,70 +46,31 @@
     decodedMnemonics    : byId("decoded-mnemonics"),
 
     decrypter           : byId("decrypter"),
-	decrypterShow       : byId("decrypter-show"),
+	decrypterToggle     : byId("decrypter-toggle"),
 	reconstructedHexText: byId("reconstructed-hex-text"),
     reconstructedHex    : byId("reconstructed-hex"),
     reconstructedBase58 : byId("reconstructed-b58"),
   };
 
   // --- Show/Hide passphrase controls ---
-  // ---------- Icon URLs from <template> (flattened build) ----------
-  function svgTemplateUrl(id) {
-//console.log("L20",id);
-    const tpl = document.getElementById(id);
-//console.log("L22",tpl);
-//console.log("L26",tpl.innerHTML);
-
-    if (!tpl) return null;
-    // Inlined by your Python bundler: raw SVG markup inside <template>
-    const svgText = tpl.innerHTML || "";
-    const trimmed = svgText.trim();
-//console.log("L21",trimmed);
-    if (!trimmed) return null;
-    try {
-      return URL.createObjectURL(new Blob([trimmed], { type: "image/svg+xml" }));
-    } catch { return null; }
+  function setState(inputEl, toggleEl, show) {
+    inputEl.type = show ? 'text' : 'password';
+    toggleEl.innerHTML = show ? icons.eyeClosed : icons.eyeOpen;
+    toggleEl.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    toggleEl.setAttribute('aria-pressed', String(show));
   }
 
-  // Build Blob URLs if templates are present (flattened build).
-  // In unflattened/dev, these will be null and we’ll fall back to file paths.
-  const __eyeURL    = svgTemplateUrl("icon-eye");
-  const __eyeOffURL = svgTemplateUrl("icon-eye-off");
-
-  // Prefer template-derived Blob URLs when present (flattened build),
-  // otherwise use file paths (unflattened/dev).
-  const EYE     = (__eyeURL    || (window.__ICON_URLS && window.__ICON_URLS.eye))    || 'icons/eye.svg';
-  const EYE_OFF = (__eyeOffURL || (window.__ICON_URLS && window.__ICON_URLS.eyeOff)) || 'icons/eye-off.svg';
-
-  function wireToggle(input, btn) {
-    if (!input || !btn) return;
-    const img = btn.querySelector('img');
-
-    // sync UI from current input.type
-    const sync = () => {
-      const showing = input.type === 'text';
-      if (img) img.src = showing ? EYE_OFF : EYE;
-      btn.setAttribute('aria-label', showing ? 'Hide passphrase' : 'Show passphrase');
-    };
-    sync();
-
-    const toggle = () => {
-      input.type = (input.type === 'password') ? 'text' : 'password';
-      sync();
-      input.focus({ preventScroll: true });
-      const v = input.value; try { input.setSelectionRange(v.length, v.length); } catch {}
-    };
-
-    // keep focus on the input; support keyboard
-    btn.addEventListener('mousedown', e => e.preventDefault());
-    btn.addEventListener('click', toggle);
-    btn.addEventListener('keydown', e => {
-      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+  function attachToggle(inputEl, toggleEl) {
+    toggleEl.addEventListener('click', () => {
+      const showing = inputEl.type === 'text';
+      setState(inputEl, toggleEl, !showing);
     });
+    // initialize hidden
+    setState(inputEl, toggleEl, false);
   }
 
-  wireToggle(dom.passphrase, dom.passphraseShow);
-  wireToggle(dom.decrypter,  dom.decrypterShow);
+  attachToggle(dom.passphrase, dom.passphraseToggle);
+  attachToggle(dom.decrypter,  dom.decrypterToggle);
   
   // --- Utility Functons ---
   function bytesToHex(u8) {
