@@ -4,7 +4,8 @@
   const MAX_SHARES = 16;
 
   // --- Utility ---
-  const byId = id => document.getElementById(id);
+  const byId = id  => document.getElementById(id);
+  const qs   = sel => document.querySelector(sel);
   const qsa = sel => Array.from(document.querySelectorAll(sel));
 
   // debounce wrapper
@@ -20,6 +21,9 @@
   const dom = {
     strengthButtons     : qsa("button.generate"),
 
+    createDetails       : byId("create-details"),
+	createPill          : byId("create-pill"),
+
     masterSecretHexText : byId("master-secret-hex-text"),
     masterSecretHex     : byId("master-secret-hex"),
     masterSecretHexCopy : byId("master-secret-hex-copy"),
@@ -31,6 +35,7 @@
 
     passphrase          : byId("passphrase"),
     passphraseToggle    : byId("passphrase-toggle"),
+
     totalShares         : byId("total-shares"),
     totalSharesError    : byId("total-shares-error"),
 
@@ -39,6 +44,9 @@
 
     newShares           : byId("new-shares"),
     newSharesBase58     : byId("new-shares-base58"),
+
+    combineDetails      : byId("combine-details"),
+	combinePill         : byId("combine-pill"),
 
     decodeLabel         : byId("decode-mode"),
     convertLabel        : byId("convert-to"),
@@ -89,6 +97,21 @@
     }
   }
   
+  // --- show/hide details on cards
+  function setDetailVisibility(detailsEl, pillEl) {
+	pillEl.textContent = detailsEl.open ? "Collapse" : "Expand";
+	pillEl.hidden      = detailsEl.open ? true : false;
+  }
+  
+  function attachDetailVisibility(detailsEl, pillEl) {
+    const update = () => setDetailVisibility(detailsEl, pillEl);
+    detailsEl.addEventListener('toggle', update);
+    update(); // set initial label
+  }
+  
+  attachDetailVisibility(dom.createDetails, dom.createPill);
+  attachDetailVisibility(dom.combineDetails, dom.combinePill);
+  
   // --- Show/Hide passphrase controls ---
   function setState(inputEl, toggleEl, show) {
     inputEl.type = show ? 'text' : 'password';
@@ -108,7 +131,51 @@
 
   attachToggle(dom.passphrase, dom.passphraseToggle);
   attachToggle(dom.decrypter,  dom.decrypterToggle);
-  
+
+  // --- stepper buttons with clamping ---
+  (() => {
+	qsa('button.decrement').forEach(btn => {
+      btn.innerHTML = icons.chevronsLeft;
+      btn.setAttribute('aria-label', 'decrement'); // a11y since icon has no text
+    });
+	qsa('button.increment').forEach(btn => {
+      btn.innerHTML = icons.chevronsRight;
+      btn.setAttribute('aria-label', 'increment'); // a11y since icon has no text
+    });
+  })();
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-target]');
+    if (!btn) return;
+
+    const id  = btn.dataset.target;          // "total-shares" | "threshold"
+    const inp = document.getElementById(id);
+    const otherId = id === 'total-shares' ? 'threshold' : 'total-shares';
+    const other = document.getElementById(otherId);
+
+    let v     = parseInt(inp.value, 10) || 1;
+    let step  = btn.classList.contains('decrement') ? -1 : 1;
+    v += step;
+
+    /* ---- clamp rules ---- */
+    if (v < 1) v = 1;                        // total-shares and threshold must be both >=1
+    if (id === 'total-shares') {
+      if (v > MAX_SHARES) v = MAX_SHARES;    // total-shares must be <= MAX_SHARES
+      // if we shrink total-shares below threshold, pull threshold down too
+      if (v < +other.value) other.value = v;
+    } else {                                 // threshold
+      if (v > +other.value) v = +other.value; // threshold must be <= total-shares
+    }
+//console.log("id",id); console.log("v", v); console.log("otherId", otherId);
+    inp.value = v;
+    other.value = +other.value;
+
+    checkMasterSecretHex(dom.masterSecretHex.value.trim());
+
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+    other.dispatchEvent(new Event('input', { bubbles: true })); // refresh errors
+  });
+
   // --- Utility Functons ---
   function bytesToHex(u8) {
     let h = "";
@@ -493,39 +560,6 @@
 //    console.log("decrypter input changed:", decrypter.value);
     reconstruct();
   }, 100));
-
-  /* ---------- stepper buttons with clamping ---------- */
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('button[data-target]');
-    if (!btn) return;
-
-    const id  = btn.dataset.target;          // "total-shares" | "threshold"
-    const inp = document.getElementById(id);
-    const otherId = id === 'total-shares' ? 'threshold' : 'total-shares';
-    const other = document.getElementById(otherId);
-
-    let v     = parseInt(inp.value, 10) || 1;
-    let step  = btn.classList.contains('decrement') ? -1 : 1;
-    v += step;
-
-    /* ---- clamp rules ---- */
-    if (v < 1) v = 1;                        // total-shares and threshold must be both >=1
-    if (id === 'total-shares') {
-      if (v > MAX_SHARES) v = MAX_SHARES;    // total-shares must be <= MAX_SHARES
-      // if we shrink total-shares below threshold, pull threshold down too
-      if (v < +other.value) other.value = v;
-    } else {                                 // threshold
-      if (v > +other.value) v = +other.value; // threshold must be <= total-shares
-    }
-//console.log("id",id); console.log("v", v); console.log("otherId", otherId);
-    inp.value = v;
-    other.value = +other.value;
-
-    checkMasterSecretHex(dom.masterSecretHex.value.trim());
-
-    inp.dispatchEvent(new Event('input', { bubbles: true }));
-    other.dispatchEvent(new Event('input', { bubbles: true })); // refresh errors
-  });
 
   // --- Combine mode ---
   let combineMode = document.querySelector("input[name='combine-mode']:checked").value;
