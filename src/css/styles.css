@@ -1,6 +1,7 @@
 :root {
   /* color scheme */
   color-scheme: light dark;
+  --header-bg: rgba(10,10,12,0.7);
   --bg: #0b0b0c;
   --fg: #e8e8ea;
   --muted: #9ea3aa;
@@ -9,8 +10,23 @@
   --err: #ff6b6b;
   --ok: #7bd88f;
   --card: #141417;
+  --button-inactive-bg: var(--card);
+  --button-hover-bg: #232a34;
+  --button-hover-border: #3a3f47;
+  --focus-glow: rgba(255, 255, 255, 0.25);
+/*  --button-checked-border: #525863; */
+  --button-checked-border: var(--button-hover-border);
+  --button-checked-bg: var(--button-checked-border);
   --input: #0f1115;
+  --input-focused: #1a1a1a;
   --border: #2a2e35;
+  --pill-accent-border: #375a9e;
+  --pill-accent-bg: #0e1a33;
+  --pill-danger-border: #5a1d1d;
+  --pill-danger-bg: #1a0e0e;
+  
+  /* a11y */
+  --outline-color: color-mix(in oklab, var(--accent), var(--bg) 50%);
 
   /* layout & rhythm */
   --radius: 6px;
@@ -117,7 +133,7 @@ header {
   padding-block: 20px;
   padding-inline: 16px;
   border-block-end: 1px solid var(--border);
-  background: rgba(10,10,12,0.7);
+  background: var(--header-bg);
   backdrop-filter: blur(6px);
 }
 
@@ -241,11 +257,8 @@ textarea.small { min-block-size: 70px; }
 textarea:focus,
 input[type="text"]:focus,
 input[type="password"]:focus {
-  background-color: #1a1a1a;
-  border-color: #3a3f47;
-  color: #fff;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.25); /* soft white glow */
-  outline: none;
+  background-color: var(--input-focused);
+  border-color: var(--button-hover-border);
 }
 
 /* ---- buttons ---- */
@@ -255,23 +268,19 @@ button {
   padding: 7px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: #0f1216;
+  background: var(--button-inactive-bg);
   color: var(--fg);
   transition: transform .05s ease, background .2s ease, border .2s ease;
 }
 button:hover {
-  background: #232a34;
-  border-color: #3a3f47;
+  background: var(--button-hover-bg);
+  border-color: var(--button-hover-border);
 }
 button:active { transform: translateY(1px); }
-button:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent), white 10%);
-  outline-offset: 2px;
-}
 
 /* --- pill styles --- */
-.accent { border-color: #375a9e; background: #0e1a33; }
-.danger { border-color: #5a1d1d; background: #1a0e0e; }
+.accent { border-color: var(--pill-accent-border); background: var(--pill-accent-bg); }
+.danger { border-color: var(--pill-danger-border); background: var(--pill-danger-bg); }
 .pill {
   padding: 4px 8px;
   border-radius: var(--radius-pill);
@@ -285,9 +294,9 @@ button:focus-visible {
   display: inline-flex;
   align-items: center;
   border: none;
-  border-radius: 0;
+  border-radius: var(--radius);
   background: transparent;
-  overflow: hidden;
+  overflow: visible;
 }
 .number-control label {
   margin: 0;
@@ -306,7 +315,6 @@ button:focus-visible {
   color: var(--fg);
   text-align: center;
   line-height: 28px; /* match control height */
-  outline: none;
   overflow: hidden;
 }
 .number-control button {
@@ -322,9 +330,13 @@ button:focus-visible {
   /* keep your existing visuals/interaction */
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: #0f1216;
+  background: var(--button-inactive-bg);
   color: var(--fg);
   transition: transform .05s ease, background .2s ease, border .2s ease;
+}
+.number-control button:hover {
+  background: var(--button-hover-bg);
+  border-color: var(--button-hover-border);
 }
 .number-control button.increment svg,
 .number-control button.decrement svg {
@@ -400,18 +412,12 @@ button:focus-visible {
 }
 
 /* ---- accessibility & motion ---- */
-/* Keep visible focus for links (keyboard nav),
-   but remove the glowing ring from inputs to match old.css */
-a:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent), white 10%);
-  outline-offset: 2px;
-}
 
 /* --- Bootstrap-style radio button group (plain CSS) --- */
 .btn-group {
   display: inline-flex;
   border-radius: var(--radius);
-  overflow: hidden; /* clip rounded corners */
+/*s  overflow: hidden; /* clip rounded corners */
 }
 
 /* Robust, accessible "visually hidden" radio inputs */
@@ -442,7 +448,7 @@ a:focus-visible {
   padding: 4px 12px;
   min-inline-size: 12ch;
   line-height: 1.4;
-  background: #0f1216;
+  background: var(--button-inactive-bg);
   color: var(--fg);
   border: 1px solid var(--border);
   border-radius: var(--radius);  /* apply full rounding */
@@ -451,16 +457,17 @@ a:focus-visible {
   transition: background .2s, border .2s, color .2s;
 }
 
-.btn:hover { background: #232a34; border-color: #3a3f47; }
+.btn:hover { background: var(--button-hover-bg); border-color: var(--button-hover-border); }
 
 .btn-check:checked + .btn {
-  background: #525863;
-  border-color: #525863;
-  color: #fff;
+  background: var(--button-checked-bg);
+  border-color: var(--button-checked-border);
+  color: var(--fg);
 }
-.btn-check:focus-visible + .btn {
-  outline: 2px solid color-mix(in oklab, var(--accent), white 15%);
-  outline-offset: 2px;
+
+:focus-visible {
+  outline: 1px solid var(--outline-color);
+  outline-offset: 0px;
 }
 
 @media (prefers-reduced-motion: reduce) {
