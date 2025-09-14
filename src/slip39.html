@@ -19,10 +19,10 @@
     <!-- Card1 : Create -->
     
     <section id="create" class="card">
-    <details open>
+    <details id="create-details" open>
       <summary>
         <div id="create-card-summary" class="summary-text">
-          <h2 class="summary-text">Create Shares</h2>
+          <h2 class="summary-text">Create Shares<span id="create-pill" class="pill accent"></span></h2>
           <p class="note-text">Create a new secret or split an existing one into mnemonic shares.<br>
           See the <a href="#combine">Combine shares</a> section below to combine existing shares.</p>
         </div>
@@ -63,20 +63,20 @@
       <div class="shares-threshold-row">
           <div class="field">
               <div class="number-control">
-                  <label for="total-shares">Total Shares:&nbsp</label>
-                  <input id="total-shares" type="number" value="3" readonly>
-                  <button type="button" class="decrement" data-target="total-shares">-</button>
-                  <button type="button" class="increment" data-target="total-shares">+</button>
+                  <label for="total-shares">Total Shares:&nbsp;&nbsp;</label>
+                  <button type="button" class="decrement" data-target="total-shares"></button>
+                  <input id="total-shares" class="share-parameters-display" type="number" value="3" readonly>
+                  <button type="button" class="increment" data-target="total-shares"></button>
               </div>
               <p id="total-shares-error" class="err"></p>
               <p class="note">The number of shares to generate.</p>
           </div>
           <div class="field">
               <div class="number-control">
-                  <label for="threshold">Threshold:&nbsp</label>
-                  <input id="threshold" type="number" value="2" readonly>
-                  <button type="button" class="decrement" data-target="threshold">-</button>
-                  <button type="button" class="increment" data-target="threshold">+</button>
+                  <label for="threshold">Threshold:&nbsp;&nbsp;</label>
+                  <button type="button" class="decrement" data-target="threshold"></button>				  
+                  <input id="threshold" class="share-parameters-display" type="number" value="2" readonly>
+                  <button type="button" class="increment" data-target="threshold"></button>
               </div>
               <p id="threshold-error" class="err"></p>
               <p class="note">The number of shares needed to reconstruct the master secret.</p>
@@ -114,10 +114,10 @@
     <!-- Card 3: Combine -->
 
     <section id="combine" class="card">
-    <details open>
+    <details id="combine-details" open>
       <summary>
         <div id="combine-card-summary" class="summary-text">
-          <h2 class="summary-text">Combine Shares</h2>
+          <h2 class="summary-text">Combine Shares<span id="combine-pill" class="pill accent"></span></h2>
           <p class="note-text">Input created shares and optional passphrase to recover the master secret</p>
         </div>
       </summary>
