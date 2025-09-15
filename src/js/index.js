@@ -19,58 +19,72 @@
 
   // --- DOM elements ---
   const dom = {
-    strengthButtons     : qsa("button.generate"),
+	secretRadios         : qsa("input[name='secret-mode']"),
+	randomButtons        : byId("random-buttons"),
+    strengthButtons      : qsa("button.generate"),
+						 
+    createDetails        : byId("create-details"),
+	createPill           : byId("create-pill"),
 
-    createDetails       : byId("create-details"),
-	createPill          : byId("create-pill"),
+    secretTextInput      : byId("secret-text-input"),
+    masterSecretTxtLabel : byId("master-secret-txt-label"),						 
+    masterSecretTxt      : byId("master-secret-txt"),
+	masterSecretTxtCopy  : byId("master-secret-txt-copy"),
+	masterSecretHexLabel : byId("master-secret-hex-label"),
+    masterSecretHex      : byId("master-secret-hex"),
+    masterSecretHexCopy  : byId("master-secret-hex-copy"),
+    masterSecretHexError : byId("master-secret-hex-error"),
+						 
+    masterSecretB58      : byId("master-secret-b58"),
+    masterSecretB58copy  : byId("master-secret-b58-copy"),
+    masterSecretB58error : byId("master-secret-b58-error"),
+						 
+    passphrase           : byId("passphrase"),
+    passphraseToggle     : byId("passphrase-toggle"),
+						 
+    totalShares          : byId("total-shares"),
+    totalSharesError     : byId("total-shares-error"),
+						 
+    threshold            : byId("threshold"),
+    thresholdError       : byId("threshold-error"),
+						 
+    newShares            : byId("new-shares"),
+    newSharesBase58      : byId("new-shares-base58"),
+						 
+    combineDetails       : byId("combine-details"),
+	combinePill          : byId("combine-pill"),
 
-    masterSecretHexText : byId("master-secret-hex-text"),
-    masterSecretHex     : byId("master-secret-hex"),
-    masterSecretHexCopy : byId("master-secret-hex-copy"),
-    masterSecretHexError: byId("master-secret-hex-error"),
+    combineRadios        : qsa("input[name='combine-mode']"),
+    decodeMode           : byId("decode-mode"),
+    convertLabel         : byId("convert-to"),
+    combineRadios        : qsa("input[name='combine-mode']"),
+						 
+    existingShares       : byId("existing-shares"),
+    reconstructedErr     : byId("reconstructed-error"),
+    decodedBlock         : byId("decoded-block"),
+    decodedMnemonics     : byId("decoded-mnemonics"),
+						 
+    decrypter            : byId("decrypter"),
+    decrypterToggle      : byId("decrypter-toggle"),
+	reconstructedTxt     : byId("reconstructed-txt"),
 
-    masterSecretB58     : byId("master-secret-b58"),
-    masterSecretB58copy : byId("master-secret-b58-copy"),
-    masterSecretB58error: byId("master-secret-b58-error"),
-
-    passphrase          : byId("passphrase"),
-    passphraseToggle    : byId("passphrase-toggle"),
-
-    totalShares         : byId("total-shares"),
-    totalSharesError    : byId("total-shares-error"),
-
-    threshold           : byId("threshold"),
-    thresholdError      : byId("threshold-error"),
-
-    newShares           : byId("new-shares"),
-    newSharesBase58     : byId("new-shares-base58"),
-
-    combineDetails      : byId("combine-details"),
-	combinePill         : byId("combine-pill"),
-
-    decodeLabel         : byId("decode-mode"),
-    convertLabel        : byId("convert-to"),
-    combineRadios       : qsa("input[name='combine-mode']"),
-
-    existingShares      : byId("existing-shares"),
-    reconstructedErr    : byId("reconstructed-error"),
-    decodedBlock        : byId("decoded-block"),
-    decodedMnemonics    : byId("decoded-mnemonics"),
-
-    decrypter           : byId("decrypter"),
-    decrypterToggle     : byId("decrypter-toggle"),
-    reconstructedHexText: byId("reconstructed-hex-text"),
-    reconstructedHex    : byId("reconstructed-hex"),
-    reconstructedHexCopy: byId("reconstructed-hex-copy"),
-    reconstructedB58    : byId("reconstructed-b58"),
-    reconstructedB58Copy: byId("reconstructed-b58-copy"),
+    reconstructedTxtLabel: byId("reconstructed-txt-label"),
+	reconstructedTxt     : byId("reconstructed-txt"),
+	reconstructedTxtCopy : byId("reconstructed-txt-copy"),
+    reconstructedHexLabel: byId("reconstructed-hex-label"),
+    reconstructedHex     : byId("reconstructed-hex"),
+    reconstructedHexCopy : byId("reconstructed-hex-copy"),
+    reconstructedB58     : byId("reconstructed-b58"),
+    reconstructedB58Copy : byId("reconstructed-b58-copy"),
   };
 
   // --- show copy buttons ---
   function setIconForCopyButton(buttonEl) { buttonEl.innerHTML = icons.copy; }
   
+  setIconForCopyButton(dom.masterSecretTxtCopy);
   setIconForCopyButton(dom.masterSecretHexCopy);
   setIconForCopyButton(dom.masterSecretB58copy);
+  setIconForCopyButton(dom.reconstructedTxtCopy);
   setIconForCopyButton(dom.reconstructedHexCopy);
   setIconForCopyButton(dom.reconstructedB58Copy);
   
@@ -97,7 +111,7 @@
     }
   }
   
-  // --- show/hide details on cards
+  // --- show/hide details on cards ---
   function setDetailVisibility(detailsEl, pillEl) {
 	pillEl.textContent = detailsEl.open ? "Collapse" : "Expand";
 	pillEl.hidden      = detailsEl.open ? true : false;
@@ -202,6 +216,28 @@
     }
     return a;
   }
+  
+  function textToBytes(t) {
+    let hex = "";
+    for (let i = 0; i < t.length; i++) {
+      let code = t.charCodeAt(i).toString(16); // convert to hex
+      if (code.length < 2) code = "0" + code;  // ensure 2 digits
+      hex += code;
+    }
+    return hex;
+  }
+
+  function bytesToText(hex) {
+    // if odd length, pad one 0 in front
+    if (hex.length % 2 !== 0) hex = "0" + hex;
+  
+    let text = "";
+    for (let i = 0; i < hex.length; i += 2) {
+      let byte = parseInt(hex.substr(i, 2), 16);
+      text += String.fromCharCode(byte);
+    }
+    return text;
+  }
 
   function showmasterSecretHexError(msg) {
     dom.masterSecretHexError.textContent = msg || "";
@@ -265,6 +301,11 @@
       return false;
     }
     return true;
+  }
+  
+  function checkMasterSecretText(strfull) {
+	const str = strFull
+	return "";
   }
 
   function checkMasterSecretHex(strFull) {
@@ -417,7 +458,7 @@
 
     const secretHex = bytesToHex(secretBytes);
     dom.reconstructedHex.value = secretHex;
-    updateHexText(secretHex, dom.reconstructedHexText);
+    updateHexLabel(secretHex, dom.reconstructedHexLabel);
     dom.reconstructedB58.value = converter.bytesHexStringToBase58(secretHex, 1);
   }
 
@@ -434,7 +475,7 @@
     }
     // generate master secret
     const masterSecretHex = generateMasterSecret(strength);
-    updateHexText(masterSecretHex, dom.masterSecretHexText);
+    updateHexLabel(masterSecretHex, dom.masterSecretHexLabel);
     updateMasterSecretB58(masterSecretHex, true);
     createShares();
   };
@@ -444,13 +485,34 @@
     btn.addEventListener("click", generateStrength);
   });
 
-  function updateHexText(v, el) {
+  function updateTxtLabel(v, el) {
+	const txt = v.trim();
+    const numBits  = txt.length * 8;
+    const numBytes = txt.length;
+    const head = "Master Secret text (don't start or end with space)"
+    const text = (numBits === 0 )? head : head+` - ${numBytes} bytes (${numBits} bits)`
+    el.textContent = text;
+  }
+
+  function updateHexLabel(v, el) {
     const hex = v.trim();
     const numBits  = hex.length * 4;
     const numBytes = hex.length * 0.5;
     const head = "Master Secret (hex)"
     const text = (numBits === 0 )? head : head+` - ${numBytes} bytes (${numBits} bits)`
     el.textContent = text;
+  }
+  
+  function updateMasterSecretTxt(txt, updateTxt) {
+    if (updateTxt) dom.masterSecretTxt.value = txt;
+    let t;
+    if (t.length > 0) {
+      t = converter.base58ToBytesHexString(b58, 1);
+    } else {
+      b = "";
+    }
+    dom.masterSecretHex.value = b;
+    return checkMasterSecretHex(b);
   }
 
   function updateMasterSecretHex(b58, updateB58) {
@@ -475,6 +537,30 @@
     }
     dom.masterSecretB58.value = b;
   }
+  
+  // --- master-seceret-txt input ---
+  const filterNotAsciiPrintables = /[^\x20-\x7E]/g;
+  dom.masterSecretTxt.addEventListener("input", e => {
+//    let v = e.target.value.trim();
+    let v = e.target.value;
+	v = v.replace(filterNotAsciiPrintables, "");
+	e.target.value = v;
+	
+	debouncedMasterSecretTxtInput(v);
+  });
+  
+  const debouncedMasterSecretTxtInput = debounce(v => {
+    updateTxtLabel(v, dom.masterSecretTxtLabel);
+    try {
+      updateMasterSecretTxt(v, false);
+      const vBlank = (v === "");
+      const vError = checkMasterSecretHex(v);
+      if (vError !== "" || vBlank) { clearShares(); return; }
+      createShares();
+    } catch (e) {
+      dom.masterSecretHexError.textContent = e.message || String(e);
+    }
+  }, 100);
 
   // --- master-secret-hex input ---
   const filterNotHex = new RegExp(`[^${wordList.hexString}]`, "g");
@@ -487,7 +573,7 @@
   });
   
   const debouncedMasterSecretHexInput = debounce(v => {
-    updateHexText(v, dom.masterSecretHexText);
+    updateHexLabel(v, dom.masterSecretHexLabel);
     try {
       updateMasterSecretB58(v, false);
       const vBlank = (v === "");
@@ -514,7 +600,7 @@
       try {
         if (checkMasterSecretB58(v) !== "") { clearShares(); return; }
         updateMasterSecretHex(v, false);
-        updateHexText(dom.masterSecretHex.value, dom.masterSecretHexText);
+        updateHexLabel(dom.masterSecretHex.value, dom.masterSecretHexLabel);
         createShares();
       } catch (e) {
         dom.masterSecretB58error.textContent = e.message || String(e);
@@ -522,27 +608,24 @@
     } else {
       dom.masterSecretB58error.textContent = "";
       updateMasterSecretHex("", false);
-      updateHexText(dom.masterSecretHex.value, dom.masterSecretHexText);
+      updateHexLabel(dom.masterSecretHex.value, dom.masterSecretHexLabel);
     }
   }, 100);
 
-  // passphrase
+  // --- passphrase ---
   dom.passphrase.addEventListener("input", debounce(() => {
-//    console.log("passphrase changed:", passphrase.value);
     createShares();
   }, 100));
 
-  // Total Shares
+  // --- Total Shares ---
   dom.totalShares.addEventListener("input", debounce(() => {
-//    console.log("total-shares changed:", totalShares.value);
     const n = parseInt(dom.totalShares.value, 10);
     dom.totalSharesError.textContent = (n > 0) ? "" : "Total shares must be > 0";
     createShares();
   }, 1));
 
-  // Threshold
+  // --- Threshold ---
   dom.threshold.addEventListener("input", debounce(() => {
-//    console.log("threshold changed:", threshold.value);
     const t = parseInt(dom.threshold.value, 10);
     dom.thresholdError.textContent = (t > 0) ? "" : "Threshold must be > 0";
     createShares();
@@ -550,9 +633,6 @@
 
   // --- Existing Shares Input ---
   dom.existingShares.addEventListener("input", debounce(() => {
-//console.log("combineMode",combineMode);
-//console.log("existing-shares input changed:", dom.existingShares.value);
-
     reconstruct();
   }, 100));
 
@@ -561,26 +641,113 @@
     reconstruct();
   }, 100));
 
+  // --- update secret generation mode ---
+  let secretMode = qs("input[name='secret-mode']:checked").value;
+  
+  function canConvertHexToText(hexArray) {
+	let can = true;
+	for (const item of hexArray) {
+      if (item < 0x20 || item > 0x7e) { can = false; break; }
+	}
+	return can;
+  }
+  
+  function updateSecretUI(mode) {
+	secretMode = mode;
+console.log("uSUI", mode);
+console.log("mstv",dom.masterSecretTxt.value);
+console.log("mshv",dom.masterSecretHex.value);
+console.log("msbv",dom.masterSecretB58.value);
+    if (mode === "hex") {
+		
+	  // switch to hex input
+	  
+      dom.randomButtons.hidden = false;
+	  dom.secretTextInput.hidden = true;
+	  dom.masterSecretHex.readOnly = false;
+	  dom.masterSecretHex.placeholder = "enter hex string eg 0123456789abcdef0123456789ABCDEF";
+	  dom.masterSecretB58.readOnly = false;
+	  dom.masterSecretB58.placeholder = "enter base58 string [1-9A-HJ-NP-Za-km-z]";
+	  
+    } else if (mode === "txt") {
+		
+	  const hexLen = dom.masterSecretHex.value.trim().length;
+	  const b58Len = dom.masterSecretB58.value.trim().length;
+	  const blank =  hexLen === 0 && b58Len === 0;
+	  const canConvertHex = canConvertHexToText(hexToBytes(dom.masterSecretHex.value));
+	  const convertedB58 = converter.base58ToBytesHexString(dom.masterSecretB58.value, 1);
+//console.log("convertedB58",convertedB58);
+	  const canConvertB58 = canConvertHexToText(hexToBytes(convertedB58));
+//console.log("canConvertB58",canConvertB58);
+	  const canConvert = blank? true :  canConvertHex && canConvertB58;
+//console.log("blank", blank);
+//console.log("canConvert",canConvert);
+
+	  let goAhead;
+	  if ( !blank && !canConvert) {
+
+        goAhead = confirm("Master Secret (hex and Base58) is not empty,\nand cannot be converted safely to printable ASCII text (0x20-0x7e).\nSwitching to text mode will clear them.");
+	  
+	  } else goAhead = true;
+//console.log("goAhead",goAhead);		
+	  if (goAhead) {	
+		
+		// switch to txt input
+		
+		// clear Hex and B58 if necessary
+		if ( blank || !canConvert) {
+		  dom.masterSecretHex.value = "";
+		  dom.masterSecretB58.value = "";
+		}
+        checkMasterSecretHex(dom.masterSecretHex.value);
+		checkMasterSecretB58(dom.masterSecretB58.value);
+	    updateHexLabel(dom.masterSecretHex.value, dom.masterSecretHexLabel)
+		
+		dom.randomButtons.hidden = true;
+	    dom.secretTextInput.hidden = false;
+	    dom.masterSecretHex.readOnly = true;
+		dom.masterSecretHex.placeholder = "will be converted from text";
+	    dom.masterSecretB58.readOnly = true;
+		dom.masterSecretB58.placeholder = "will be converted from text";
+		
+	  } else { // user backs out of switching to text
+	  
+	    document.querySelectorAll("input[name='secret-mode']").forEach(radio => {
+		  radio.checked = (radio.value === "hex"); // select hex
+        });
+      }
+    }
+  }
+  
+  // secret radios
+  dom.secretRadios.forEach(radio => {
+    radio.addEventListener("change", () => {
+      updateSecretUI(radio.value);
+    });
+  });
+  
+  // update at startup
+  updateSecretUI(secretMode);
+  
   // --- Combine mode ---
-  let combineMode = document.querySelector("input[name='combine-mode']:checked").value;
+  let combineMode = qs("input[name='combine-mode']:checked").value;
 
   function updateCombineUI(mode) {
     combineMode = mode;
-//    console.log("Combine mode:", combineMode);
 
     if (combineMode === "mnemonics") {
       dom.existingShares.placeholder = "Enter your mnemonic shares here, one per line";
-      dom.decodeLabel.textContent = "Mnemonics Input";
+      dom.decodeMode.textContent = "Mnemonics Input";
       dom.convertLabel.textContent = "Converted to Base-58";
       dom.decodedMnemonics.placeholder = "Decoded Base-58 appear here."
     } else if (combineMode === "base58") {
       dom.existingShares.placeholder = "Enter your Base-58 shares here, one per line";
-      dom.decodeLabel.textContent = "Base-58 Input";
+      dom.decodeMode.textContent = "Base-58 Input";
       dom.convertLabel.textContent = "Converted to mnemonics";
       dom.decodedMnemonics.placeholder = "Decoded mnemonics appear here."
     } else {
       dom.existingShares.placeholder = "Invalid combine mode detected.";
-      dom.decodeLabel.textContent = "Error!";
+      dom.decodeMode.textContent = "Error!";
       dom.convertLabel.textContent = "Error!";
     }
 
@@ -590,15 +757,17 @@
     clearReconstructed();
   }
 
-  // hook up radios
+  // combine radios
   dom.combineRadios.forEach(radio => {
     radio.addEventListener("change", () => updateCombineUI(radio.value));
   });
 
-  // run once on startup
+  // update at startup
   updateCombineUI(combineMode);
-  updateHexText(dom.masterSecretHex.value, dom.masterSecretHexText);
-  updateHexText(dom.reconstructedHex.value, dom.reconstructedHexText);
+  
+  // --- run once on startup ---
+  updateHexLabel(dom.masterSecretHex.value, dom.masterSecretHexLabel);
+  updateHexLabel(dom.reconstructedHex.value, dom.reconstructedHexLabel);
   if(checkMasterSecretB58(dom.masterSecretB58.value) !== "") clearShares();
   if(checkMasterSecretHex(dom.masterSecretHex.value) !== "") clearShares();
   
