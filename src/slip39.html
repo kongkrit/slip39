@@ -17,7 +17,7 @@
   <main class="grid">
 
     <!-- Card1 : Create -->
-    
+
     <section id="create" class="card">
     <details id="create-details" open>
       <summary>
@@ -29,25 +29,48 @@
       </summary>
 
       <h3>Secret</h3>
-      <p>Securely generate random master secret with strength of:</p>
-      <div class="row">
-        <button id="strength-128" class="generate" data-strength="128">128 bits</button>
-        <button id="strength-160" class="generate" data-strength="160">160 bits</button>
-        <button id="strength-192" class="generate" data-strength="192">192 bits</button>
-        <button id="strength-224" class="generate" data-strength="224">224 bits</button>
-        <button id="strength-256" class="generate" data-strength="256">256 bits</button>
-      </div>
 
-      <label id="master-secret-hex-text" for="master-secret-hex"></label>
+	  <div id="secret-creation-mode">
+  	    <p>Create master secret with:</p>
+        <div class="btn-group" role="group" aria-label="create secret mode" id="secret-mode-buttons">
+          <input type="radio" class="btn-check" name="secret-mode" id="secret-hex" value="hex" checked>
+          <label class="btn" for="secret-hex">Random</label>
+          <input type="radio" class="btn-check" name="secret-mode" id="secret-ascii" value="txt">
+          <label class="btn" for="secret-ascii">Text</label>
+        </div>
+	  </div>
+
+      <div id="random-buttons">
+	    <p></p>
+        <p>Securely generate a random master secret with strength of:</p>
+        <div class="row">
+          <button id="strength-128" class="generate" data-strength="128">128 bits</button>
+          <button id="strength-160" class="generate" data-strength="160">160 bits</button>
+          <button id="strength-192" class="generate" data-strength="192">192 bits</button>
+          <button id="strength-224" class="generate" data-strength="224">224 bits</button>
+          <button id="strength-256" class="generate" data-strength="256">256 bits</button>
+        </div>
+	  </div>
+
+	  <div id="secret-text-input">
+	    <p></p>
+	    <label id="master-secret-txt-label" for="master-secret-txt"></label>
+		<div class="input-with-btn">
+	      <textarea id="master-secret-txt" rows="2" placeholder="enter text here..."></textarea>
+		  <button onclick="copyToClipboard('master-secret-txt')" id="master-secret-txt-copy" type="button" aria-label="copy master secret text"></button>
+		</div>
+	  </div>
+
+      <label id="master-secret-hex-label" for="master-secret-hex"></label>
       <div class="input-with-btn">
-        <input id="master-secret-hex" type="text" placeholder="hex string eg 0123456789abcdef0123456789ABCDEF">
+        <textarea id="master-secret-hex" rows="2"></textarea>
         <button onclick="copyToClipboard('master-secret-hex')" id="master-secret-hex-copy" type="button" aria-label="copy master secret hex"></button>
       </div>
       <p class="err" id="master-secret-hex-error"></p>
       <label for="master-secret-b58">Master Secret (Base58)</label>
       <div class="input-with-btn">
-        <input id="master-secret-b58" type="text" placeholder="base58 string [1-9A-HJ-NP-Za-km-z]">
-        <button onclick="copyToClipboard('master-secret-b58')" id="master-secret-b58-copy" type="button" aria-label="copy master secret b58"></button>
+	    <textarea id="master-secret-b58" rows="2"></textarea>
+        <button onclick="copyToClipboard('master-secret-b58')" id="master-secret-b58-copy" type="button" aria-label="copy master secret base 58"></button>
       </div>
       <p class="err" id="master-secret-b58-error"></p>
 
@@ -74,7 +97,7 @@
           <div class="field">
               <div class="number-control">
                   <label for="threshold">Threshold:&nbsp;&nbsp;</label>
-                  <button type="button" class="decrement" data-target="threshold"></button>				  
+                  <button type="button" class="decrement" data-target="threshold"></button>
                   <input id="threshold" class="share-parameters-display" type="number" value="2" readonly>
                   <button type="button" class="increment" data-target="threshold"></button>
               </div>
@@ -82,23 +105,12 @@
               <p class="note">The number of shares needed to reconstruct the master secret.</p>
           </div>
       </div>
-<!--
-    </details>
-    </section>
--->
-    <!-- Card 2: Created Shares -->
-<!--    
-    <section id="create" class="card">
-    <details open>
-      <summary>
--->   
+
         <div id="create-card-summary" class="summary-text">
           <h3 class="summary-text">Created Shares</h3>
           <p class="note-text">Shares created by parameters from <i>Create</i> section</p>
         </div>
-<!--
-      </summary>
--->
+
       <div id="mnemonic-block">
           <label for="new-shares">Mnemonics</label>
           <textarea id="new-shares" rows="10" readonly placeholder="Mnemonic Shares will be shown here"></textarea>
@@ -110,8 +122,8 @@
       </div>
     </details>
     </section>
-    
-    <!-- Card 3: Combine -->
+
+    <!-- Card 2: Combine -->
 
     <section id="combine" class="card">
     <details id="combine-details" open>
@@ -121,7 +133,7 @@
           <p class="note-text">Input created shares and optional passphrase to recover the master secret</p>
         </div>
       </summary>
-      
+
       <div id="combine-modes">
         <p></p>
         <p>Recover a master secret from a set of:</p>
@@ -148,32 +160,26 @@
         <input id="decrypter" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text">
         <button id="decrypter-toggle" type="button" aria-label="Show passphrase"></button>
       </div>
-<!--
-    </details>
-    </section>
---> 
-    <!-- Card 4: Result -->
-<!--
-    <section id="result" class="card">
-    <details open>
-      <summary>
--->
+
         <div id="result-card-summary" class="summary-text">
           <h3 class="summary-text">Recovered Master Secret</h2>
           <p class="note-text">Master Secret recovered from shares and optional passphrase</p>
         </div>
-<!--
-      </summary>
--->   
-      <label id="reconstructed-hex-text" for="reconstructed-hex"></label>
+
+      <label id="reconstructed-txt-label" for="reconstructed-txt">Master Secret Text</label>
       <div class="input-with-btn">
-        <input id="reconstructed-hex" type="text" readonly>
+        <textarea id="reconstructed-txt" rows="2" readonly></textarea>
+        <button onclick="copyToClipboard('reconstructed-txt')" id="reconstructed-txt-copy" type="button" aria-label="copy reconstructed text"></button>
+      </div>
+      <label id="reconstructed-hex-label" for="reconstructed-hex"></label>
+      <div class="input-with-btn">
+        <textarea id="reconstructed-hex" rows="2" readonly></textarea>
         <button onclick="copyToClipboard('reconstructed-hex')" id="reconstructed-hex-copy" type="button" aria-label="copy reconstructed hex"></button>
       </div>
       <label for="reconstructed-b58">Master Secret (Base58)</label>
       <div class="input-with-btn">
-        <input id="reconstructed-b58" type="text" readonly>
-        <button onclick="copyToClipboard('reconstructed-b58')" id="reconstructed-b58-copy" type="button" aria-label="copy reconstructed b58"></button>
+        <textarea id="reconstructed-b58" rows="2" readonly></textarea>
+        <button onclick="copyToClipboard('reconstructed-b58')" id="reconstructed-b58-copy" type="button" aria-label="copy reconstructed base 58"></button>
       </div>
     </details>
     </section>
