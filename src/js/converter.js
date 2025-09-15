@@ -243,6 +243,43 @@
 	return true;
   }
   
+  function printableASCIItoBytesHexString(txt) {
+    let hex = "";
+    for (let i = 0; i < txt.length; i++) {
+      const code = txt.charCodeAt(i);
+      if (code < 0x20 || code > 0x7E) {
+        throw new Error(
+          `character at index ${i} has code ${code}; not printable ASCII in [0x20, 0x7E]`
+        );
+      }
+      hex += code.toString(16).padStart(2, "0"); // left-pad to 2 hex digits
+    }
+    return hex;
+  }
+  
+  function bytesHexStringToPrintableASCII(hex) {
+    // if odd length, pad one 0 in front
+	hex = String(hex).trim();
+	
+	if (!/^[0-9a-fA-F]*$/.test(hex)) throw new Error("hex string contains non-hex characters");
+    
+	if (hex.length % 2 !== 0) hex = "0" + hex;
+	
+    let text = "";
+    for (let i = 0; i < hex.length; i += 2) {
+      const byteStr = hex.slice(i, i + 2);
+      const b = parseInt(byteStr, 16);     // 0–255
+      if (b < 0x20 || b > 0x7E) {
+        // i/2 is the byte index
+        throw new Error(
+		  `byte ${i / 2} has value 0x${byteStr.toUpperCase()} (${b}); not printable ASCII in [0x20, 0x7E]`
+		);
+      }
+      text += String.fromCharCode(b);
+    }
+    return text;
+  }
+
   // expose
   root.converter = root.converter || {};
   root.converter.check = check;
@@ -260,5 +297,7 @@
   root.converter.conversionOk         = conversionOk;
   root.converter.bytesHexStringToBase58 = bytesHexStringToBase58;
   root.converter.base58ToBytesHexString = base58ToBytesHexString;
+  root.converter.printableASCIItoBytesHexString = printableASCIItoBytesHexString;
+  root.converter.bytesHexStringToPrintableASCII = bytesHexStringToPrintableASCII;
   
 })(globalThis);
