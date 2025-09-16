@@ -67,7 +67,7 @@
         <button onclick="copyToClipboard('master-secret-hex')" id="master-secret-hex-copy" type="button" aria-label="copy master secret hex"></button>
       </div>
       <p class="err" id="master-secret-hex-error"></p>
-      <label for="master-secret-b58">Master Secret (Base58)</label>
+      <label id="master-secret-b58-label" for="master-secret-b58"></label>
       <div class="input-with-btn">
 	    <textarea id="master-secret-b58" rows="2"></textarea>
         <button onclick="copyToClipboard('master-secret-b58')" id="master-secret-b58-copy" type="button" aria-label="copy master secret base 58"></button>
@@ -166,7 +166,7 @@
           <p class="note-text">Master Secret recovered from shares and optional passphrase</p>
         </div>
 
-      <label id="reconstructed-txt-label" for="reconstructed-txt">Master Secret Text</label>
+      <label id="reconstructed-txt-label" for="reconstructed-txt"></label>
       <div class="input-with-btn">
         <textarea id="reconstructed-txt" rows="2" readonly></textarea>
         <button onclick="copyToClipboard('reconstructed-txt')" id="reconstructed-txt-copy" type="button" aria-label="copy reconstructed text"></button>
@@ -176,7 +176,7 @@
         <textarea id="reconstructed-hex" rows="2" readonly></textarea>
         <button onclick="copyToClipboard('reconstructed-hex')" id="reconstructed-hex-copy" type="button" aria-label="copy reconstructed hex"></button>
       </div>
-      <label for="reconstructed-b58">Master Secret (Base58)</label>
+      <label id="reconstructed-b58-label" for="reconstructed-b58"></label>
       <div class="input-with-btn">
         <textarea id="reconstructed-b58" rows="2" readonly></textarea>
         <button onclick="copyToClipboard('reconstructed-b58')" id="reconstructed-b58-copy" type="button" aria-label="copy reconstructed base 58"></button>
