@@ -27,14 +27,17 @@
 	createPill           : byId("create-pill"),
 
     secretTextInput      : byId("secret-text-input"),
+	
     masterSecretTxtLabel : byId("master-secret-txt-label"),						 
     masterSecretTxt      : byId("master-secret-txt"),
 	masterSecretTxtCopy  : byId("master-secret-txt-copy"),
+	
 	masterSecretHexLabel : byId("master-secret-hex-label"),
     masterSecretHex      : byId("master-secret-hex"),
     masterSecretHexCopy  : byId("master-secret-hex-copy"),
     masterSecretHexError : byId("master-secret-hex-error"),
-						 
+	
+	masterSecretB58Label : byId("master-secret-b58-label"),
     masterSecretB58      : byId("master-secret-b58"),
     masterSecretB58copy  : byId("master-secret-b58-copy"),
     masterSecretB58error : byId("master-secret-b58-error"),
@@ -71,10 +74,13 @@
     reconstructedTxtLabel: byId("reconstructed-txt-label"),
 	reconstructedTxt     : byId("reconstructed-txt"),
 	reconstructedTxtCopy : byId("reconstructed-txt-copy"),
+	
     reconstructedHexLabel: byId("reconstructed-hex-label"),
     reconstructedHex     : byId("reconstructed-hex"),
     reconstructedHexCopy : byId("reconstructed-hex-copy"),
-    reconstructedB58     : byId("reconstructed-b58"),
+	
+    reconstructedB58Label: byId("reconstructed-b58-label"),
+	reconstructedB58     : byId("reconstructed-b58"),
     reconstructedB58Copy : byId("reconstructed-b58-copy"),
   };
 
@@ -303,8 +309,17 @@
     return true;
   }
   
-  function checkMasterSecretText(strfull) {
-	const str = strFull
+  function checkMasterSecretTxt(strfull) {
+	const str = strFull;
+	let text;
+
+    if (str.length === 0) text = "EMPTY";
+    else if (filterNotHex.test(str)) text = "Invalid hex string!";
+    else if (str.slice(0,2) === "00") text = "Master Secret (hex) must not begin with 00";
+    else if (str.length < 32) text = "Master Secret (hex) must be at least 128 bits (32 hex chars)";
+    else if (str.length % 4 !== 0) text = "Master Secret (hex) must be an even number of bytes (multiples of 4 hex chars)";
+    else text = "";
+	
 	return "";
   }
 
@@ -313,7 +328,7 @@
     let text;
     
     if (str.length === 0) text = "EMPTY";
-    else if (!(/^[0-9a-fA-F]*$/.test(str))) text = "Invalid hex string!";
+    else if (filterNotHex.test(str)) text = "Invalid hex string!";
     else if (str.slice(0,2) === "00") text = "Master Secret (hex) must not begin with 00";
     else if (str.length < 32) text = "Master Secret (hex) must be at least 128 bits (32 hex chars)";
     else if (str.length % 4 !== 0) text = "Master Secret (hex) must be an even number of bytes (multiples of 4 hex chars)";
@@ -458,7 +473,7 @@
 
     const secretHex = bytesToHex(secretBytes);
     dom.reconstructedHex.value = secretHex;
-    updateHexLabel(secretHex, dom.reconstructedHexLabel);
+    updateLabel(secretHex, headHexLabel, dom.reconstructedHexLabel);
     dom.reconstructedB58.value = converter.bytesHexStringToBase58(secretHex, 1);
   }
 
@@ -474,9 +489,11 @@
       // TODO
     }
     // generate master secret
-    const masterSecretHex = generateMasterSecret(strength);
-    updateHexLabel(masterSecretHex, dom.masterSecretHexLabel);
-    updateMasterSecretB58(masterSecretHex, true);
+    const hex = generateMasterSecret(strength);
+	dom.masterSecretHex.value = hex;
+    updateLabel(hex, headHexLabel, dom.masterSecretHexLabel);
+    updateMasterSecret("hex", "b58", dom.masterSecretB58, hex, true);
+    updateLabel(dom.masterSecretB58.value, headB58Label, dom.masterSecretB58Label);
     createShares();
   };
 
@@ -485,37 +502,82 @@
     btn.addEventListener("click", generateStrength);
   });
 
-  function updateTxtLabel(v, el) {
-	const txt = v.trim();
-    const numBits  = txt.length * 8;
-    const numBytes = txt.length;
-    const head = "Master Secret text (don't start or end with space)"
-    const text = (numBits === 0 )? head : head+` - ${numBytes} bytes (${numBits} bits)`
+  const headTxtLabel = { dtype: "txt", txt : "Master Secret Text",     bitsPerChar: 8,};
+  const headHexLabel = { dtype: "hex", txt : "Master Secret (Hex)",    bitsPerChar: 4,};
+  const headB58Label = { dtype: "b58", txt : "Master Secret (Base58)", bitsPerChar: 8,};
+
+  function updateLabel(value, head, el) {
+	const txt = value.trim();
+    const numBits  = txt.length * head.bitsPerChar;
+    const numBytes = numBits * 0.125;
+//console.log("numBits",numBits);
+//console.log("head.dtype",head.dtype);
+	const text = (numBits === 0 )? head.txt : head.txt + (head.dtype !== "b58" ? ` - ${numBytes} bytes (${numBits} bits)` : ` - ${numBytes} characters`);
+//console.log("text",text);
     el.textContent = text;
   }
 
-  function updateHexLabel(v, el) {
-    const hex = v.trim();
-    const numBits  = hex.length * 4;
-    const numBytes = hex.length * 0.5;
-    const head = "Master Secret (hex)"
-    const text = (numBits === 0 )? head : head+` - ${numBytes} bytes (${numBits} bits)`
-    el.textContent = text;
+  const validSrcDest = ["b58hex", "b58txt", "hexb58", "hextxt", "txtb58", "txthex"];
+  function updateMasterSecret(sourceType, destType, destEl, sourceValue, updateSource) {
+  	
+    // check invalid sourceType, destType
+    const srcDest = `${sourceType}${destType}`;
+    if (!validSrcDest.includes(srcDest)) {
+  	alert (`updateMasterSecret sourceType=${sourceType} and destType=${destType} not possible`);
+  	throw new Error (`updateMasterSecret sourceType=${sourceType} and destType=${destType} not possible`);
+    }
+    
+    const srcTrim = sourceValue.trim();
+    
+    if (updateSource) {
+  	if      (sourceType === "b58") dom.masterSecretB58.value = srcTrim; 
+  	else if (sourceType === "txt") dom.masterSecretTxt.value = srcTrim;
+  	else if (sourceType === "hex") dom.masterSecretHex.value = srcTrim;
+    }
+    
+    let destV = "";
+    if (sourceValue.length > 0) {
+//console.log("converting",converter.printableASCIItoBytesHexString("a"));
+      if      (sourceType === "hex") {
+   	    if      (destType === "txt") destV = converter.bytesHexStringToPrintableASCII(srcTrim);
+   	    else if (destType === "b58") destV = converter.bytesHexStringToBase58(srcTrim);
+      } else if (sourceType === "b58") {
+        if      (destType === "txt") destV = converter.base58toPrintableASCII(srcTrim);
+     	else if (destType === "hex") destV = converter.base58ToBytesHexString(srcTrim);
+      } else if (sourceType === "txt") {
+        if      (destType === "hex") destV = converter.printableASCIItoBytesHexString(srcTrim);
+     	else if (destType === "b58") destV = converter.printableASCIItoBase58(srcTrim);
+      }
+	}
+console.log(`updateMasterSecret: ${sourceType} ${destType} source:${sourceValue} sourceValue.length:${sourceValue.length} sourcetrim:${srcTrim} destV:${destV} ${updateSource}`);
+    destEl.value = destV;
   }
-  
-  function updateMasterSecretTxt(txt, updateTxt) {
+/*
+  function updateMasterSecretHexFromTxt(txt, updateTxt) {
     if (updateTxt) dom.masterSecretTxt.value = txt;
     let t;
-    if (t.length > 0) {
-      t = converter.base58ToBytesHexString(b58, 1);
+    if (txt.length > 0) {
+      t = converter.bytesHexStringToPrintableASCII(hex);
     } else {
-      b = "";
+      t = "";
     }
-    dom.masterSecretHex.value = b;
-    return checkMasterSecretHex(b);
+    dom.masterSecretTxt.value = t;
+    return checkMasterSecretTxt(t);
   }
 
-  function updateMasterSecretHex(b58, updateB58) {
+  function updateMasterSecretB58FromTxt(hex, updateB58) {
+    if (updateHex) dom.masterSecretHex.value = hex;
+    let t;
+    if (hex.length > 0) {
+      t = converter.bytesHexStringToPrintableASCII(hex);
+    } else {
+      t = "";
+    }
+    dom.masterSecretTxt.value = t;
+    return checkMasterSecretTxt(t);
+  }
+
+  function updateMasterSecretHexFromB58(b58, updateB58) {
     if (updateB58) dom.masterSecretB58.value = b58;
     let b;
     if (b58.length > 0) {
@@ -527,7 +589,7 @@
     return checkMasterSecretHex(b);
   }
 
-  function updateMasterSecretB58(hex, updateHex) {
+  function updateMasterSecretB58FromHex(hex, updateHex) {
     if (updateHex) dom.masterSecretHex.value = hex;
     let b;
     if (hex.length > 0) {
@@ -537,32 +599,49 @@
     }
     dom.masterSecretB58.value = b;
   }
-  
+*/
+
   // --- master-seceret-txt input ---
-  const filterNotAsciiPrintables = /[^\x20-\x7E]/g;
+  
+  const filterNotASCIIprintables = /[^\x20-\x7E]/g;
   dom.masterSecretTxt.addEventListener("input", e => {
-//    let v = e.target.value.trim();
     let v = e.target.value;
-	v = v.replace(filterNotAsciiPrintables, "");
+	if (v === " ") v = ""; // reject first space
+	v = v.replace(filterNotASCIIprintables, "");
 	e.target.value = v;
 	
 	debouncedMasterSecretTxtInput(v);
   });
   
   const debouncedMasterSecretTxtInput = debounce(v => {
-    updateTxtLabel(v, dom.masterSecretTxtLabel);
+	const vtrim = v.trim();
+//console.log("v",v,"vtrim",vtrim);
+    const txt2hex = converter.printableASCIItoBytesHexString(vtrim);
+	const txt2b58 = converter.printableASCIItoBase58(vtrim);
+//console.log("txt2hex",txt2hex);
+//console.log("txt2b58",txt2b58);
+	const tHex = checkMasterSecretHex(txt2hex) !== "";
+	const tB58 = checkMasterSecretB58(txt2b58) !== "";
+//console.log("tHex", tHex, "tB58", tB58);
+
     try {
-      updateMasterSecretTxt(v, false);
-      const vBlank = (v === "");
-      const vError = checkMasterSecretHex(v);
-      if (vError !== "" || vBlank) { clearShares(); return; }
-      createShares();
+//console.log("trying");
+      updateMasterSecret("txt", "hex", dom.masterSecretHex, v, false);
+	  updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel);
+      updateMasterSecret("txt", "b58", dom.masterSecretB58, v, false);
+console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
+      updateLabel(dom.masterSecretB58.value, headB58Label, dom.masterSecretB58Label);
+	  if (vtrim.length > 0) createShares();
     } catch (e) {
-      dom.masterSecretHexError.textContent = e.message || String(e);
+      dom.masterSecretTxterror.textContent = e.message || String(e);
     }
+
+	if (tHex || tB58) { clearShares(); return; }
+
   }, 100);
 
   // --- master-secret-hex input ---
+  
   const filterNotHex = new RegExp(`[^${wordList.hexString}]`, "g");
   dom.masterSecretHex.addEventListener("input", e => {
     let v = e.target.value.trim();
@@ -573,9 +652,9 @@
   });
   
   const debouncedMasterSecretHexInput = debounce(v => {
-    updateHexLabel(v, dom.masterSecretHexLabel);
+    updateLabel(v, headHexLabel, dom.masterSecretHexLabel);
     try {
-      updateMasterSecretB58(v, false);
+      updateMasterSecret("hex", "b58", dom.masterSecretB58, v, false);
       const vBlank = (v === "");
       const vError = checkMasterSecretHex(v);
       if (vError !== "" || vBlank) { clearShares(); return; }
@@ -586,6 +665,7 @@
   }, 100);
 
   // --- master-secret-b58 input ---
+  
   const filterNotB58 = new RegExp(`[^${wordList.base58string}]`, "g");
   dom.masterSecretB58.addEventListener("input", e => {
     let v = e.target.value.trim();
@@ -596,19 +676,20 @@
   });
   
   const debouncedMasterSecretB58Input = debounce(v => {
+	updateLabel(v, headB58Label, dom.masterSecretB58Label);
     if (v.length > 0) {
       try {
         if (checkMasterSecretB58(v) !== "") { clearShares(); return; }
-        updateMasterSecretHex(v, false);
-        updateHexLabel(dom.masterSecretHex.value, dom.masterSecretHexLabel);
+        updateMasterSecret("b58", "hex", dom.masterSecretHex, v, false);
+        updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel);
         createShares();
       } catch (e) {
         dom.masterSecretB58error.textContent = e.message || String(e);
       }
     } else {
       dom.masterSecretB58error.textContent = "";
-      updateMasterSecretHex("", false);
-      updateHexLabel(dom.masterSecretHex.value, dom.masterSecretHexLabel);
+      updateMasterSecret("b58", "hex", dom.masterSecretHex, "", false);
+      updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel);
     }
   }, 100);
 
@@ -654,10 +735,10 @@
   
   function updateSecretUI(mode) {
 	secretMode = mode;
-console.log("uSUI", mode);
-console.log("mstv",dom.masterSecretTxt.value);
-console.log("mshv",dom.masterSecretHex.value);
-console.log("msbv",dom.masterSecretB58.value);
+//console.log("uSUI", mode);
+//console.log("mstv",dom.masterSecretTxt.value);
+//console.log("mshv",dom.masterSecretHex.value);
+//console.log("msbv",dom.masterSecretB58.value);
     if (mode === "hex") {
 		
 	  // switch to hex input
@@ -701,7 +782,7 @@ console.log("msbv",dom.masterSecretB58.value);
 		}
         checkMasterSecretHex(dom.masterSecretHex.value);
 		checkMasterSecretB58(dom.masterSecretB58.value);
-	    updateHexLabel(dom.masterSecretHex.value, dom.masterSecretHexLabel)
+	    updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel)
 		
 		dom.randomButtons.hidden = true;
 	    dom.secretTextInput.hidden = false;
@@ -766,8 +847,12 @@ console.log("msbv",dom.masterSecretB58.value);
   updateCombineUI(combineMode);
   
   // --- run once on startup ---
-  updateHexLabel(dom.masterSecretHex.value, dom.masterSecretHexLabel);
-  updateHexLabel(dom.reconstructedHex.value, dom.reconstructedHexLabel);
+  updateLabel(dom.masterSecretTxt.value,  headTxtLabel, dom.masterSecretTxtLabel);
+  updateLabel(dom.masterSecretHex.value,  headHexLabel, dom.masterSecretHexLabel);
+  updateLabel(dom.masterSecretB58.value,  headB58Label, dom.masterSecretB58Label);
+  updateLabel(dom.reconstructedTxt.value, headTxtLabel, dom.reconstructedTxtLabel);
+  updateLabel(dom.reconstructedHex.value, headHexLabel, dom.reconstructedHexLabel);
+  updateLabel(dom.reconstructedB58.value, headB58Label, dom.reconstructedB58Label);
   if(checkMasterSecretB58(dom.masterSecretB58.value) !== "") clearShares();
   if(checkMasterSecretHex(dom.masterSecretHex.value) !== "") clearShares();
   
