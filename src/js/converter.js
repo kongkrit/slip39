@@ -93,7 +93,7 @@
     }).join("");
   }
 
-  function bytesHexStringToBase58(str, bytesPerElement) {
+  function bytesHexStringToBase58(str, bytesPerElement = 1) {
 	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
 	  throw new Error ("bytesPerElement must be integer 1 or 2");
 	}
@@ -103,7 +103,7 @@
 	return indicesToBase58Array(arr2).join("");
   }
   
-  function base58ToBytesHexString(str, bytesPerElement) {
+  function base58ToBytesHexString(str, bytesPerElement = 1) {
 	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
 	  throw new Error ("bytesPerElement must be integer 1 or 2");
 	}
@@ -279,6 +279,16 @@
     }
     return text;
   }
+  
+  function printableASCIItoBase58 (txt) {
+	const hex = printableASCIItoBytesHexString(txt);
+	return bytesHexStringToBase58(hex);
+  }
+  
+  function base58toPrintableASCII (b58) {
+    const hex = base58ToBytesHexString (b58, 1);
+	return bytesHexStringToBase58(hex);
+  }
 
   // expose
   root.converter = root.converter || {};
@@ -299,5 +309,7 @@
   root.converter.base58ToBytesHexString = base58ToBytesHexString;
   root.converter.printableASCIItoBytesHexString = printableASCIItoBytesHexString;
   root.converter.bytesHexStringToPrintableASCII = bytesHexStringToPrintableASCII;
+  root.converter.printableASCIItoBase58 = printableASCIItoBase58;
+  root.converter.base58toPrintableASCII = base58toPrintableASCII;
   
 })(globalThis);
