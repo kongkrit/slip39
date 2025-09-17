@@ -97,6 +97,7 @@
 	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
 	  throw new Error ("bytesPerElement must be integer 1 or 2");
 	}
+	   if (str === "") return "";
     const arr1 = bytesHexStringToIntArray(str, bytesPerElement);
 	const big1 = intArrayToBigInt(arr1, 256 ** bytesPerElement);
 	const arr2 = bigIntToIntArray(big1, 58);
@@ -107,6 +108,7 @@
 	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
 	  throw new Error ("bytesPerElement must be integer 1 or 2");
 	}
+    if (str === "") return "";
     const arr1 = base58arrayToIndices(str.split(""));
 	const big1 = intArrayToBigInt(arr1, 58);
 	const arr2 = bigIntToIntArray(big1, 256 ** bytesPerElement);
@@ -221,7 +223,7 @@
   }
   
   function isBase58(textIn) {
-	const pattern = new RegExp(`^[${base58text}]+$`);
+	const pattern = new RegExp(`^[${base58text}]*$`);
 	return pattern.test(textIn);
   }
 
@@ -244,6 +246,7 @@
   }
   
   function printableASCIItoBytesHexString(txt) {
+    if (txt === "") return "";
     let hex = "";
     for (let i = 0; i < txt.length; i++) {
       const code = txt.charCodeAt(i);
@@ -258,6 +261,7 @@
   }
   
   function bytesHexStringToPrintableASCII(hex) {
+    if (hex === "") return "";
     // if odd length, pad one 0 in front
 	hex = String(hex).trim();
 	
@@ -281,11 +285,13 @@
   }
   
   function printableASCIItoBase58 (txt) {
+    if (txt === "") return "";
 	const hex = printableASCIItoBytesHexString(txt);
 	return bytesHexStringToBase58(hex);
   }
   
   function base58toPrintableASCII (b58) {
+    if (b58 === "") return "";
     const hex = base58ToBytesHexString (b58, 1);
 	return bytesHexStringToBase58(hex);
   }
