@@ -474,6 +474,14 @@
     const secretHex = bytesToHex(secretBytes);
     dom.reconstructedHex.value = secretHex;
     updateLabel(secretHex, headHexLabel, dom.reconstructedHexLabel);
+    
+    if (canConvertHexToText(hexToBytes(secretHex)) {
+      dom.reconstructedTxt.value = converter.bytesHexStringToPrintableASCII(secretHex);
+    } else {
+      dom.reconstructedTxt.value = "";
+    }
+    updateLabel(dom.reconstructedTxt.value, headTxtLabel, dom.reconstructedTxtLabel);
+    
     dom.reconstructedB58.value = converter.bytesHexStringToBase58(secretHex, 1);
   }
 
