@@ -271,9 +271,11 @@ async function copyToClipboard(elementId, trimEdges = false) {
     dom.reconstructedTxt.value = "";
     dom.reconstructedHex.value = "";
     dom.reconstructedB58.value = "";
+alert("b4");
     updateLabel(dom.reconstructedTxt.value, headTxtLabel, dom.reconstructedTxtLabel);
     updateLabel(dom.reconstructedHex.value, headHexLabel, dom.reconstructedHexLabel);
     updateLabel(dom.reconstructedB58.value, headB58Label, dom.reconstructedB58Label);
+alert("aft");
   }
   clearReconstructed();
 
