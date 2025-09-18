@@ -293,7 +293,7 @@
   function base58toPrintableASCII (b58) {
     if (b58 === "") return "";
     const hex = base58ToBytesHexString (b58, 1);
-	return bytesHexStringToBase58(hex);
+	return bytesHexStringToPrintableASCII(hex);
   }
 
   // expose
