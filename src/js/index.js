@@ -271,11 +271,11 @@ async function copyToClipboard(elementId, trimEdges = false) {
     dom.reconstructedTxt.value = "";
     dom.reconstructedHex.value = "";
     dom.reconstructedB58.value = "";
-alert("b4");
+//alert("b4");
     updateLabel(dom.reconstructedTxt.value, headTxtLabel, dom.reconstructedTxtLabel);
     updateLabel(dom.reconstructedHex.value, headHexLabel, dom.reconstructedHexLabel);
     updateLabel(dom.reconstructedB58.value, headB58Label, dom.reconstructedB58Label);
-alert("aft");
+//alert("aft");
   }
   clearReconstructed();
 
@@ -538,6 +538,7 @@ alert("aft");
 	const text = (numBits === 0 )? head.txt : head.txt + (head.dtype !== "b58" ? ` - ${numBytes} bytes (${numBits} bits)` : ` - ${numBytes} characters`);
 //console.log("text",text);
     el.textContent = text;
+alert (`updateLabel head.dtype ${head.dtype} head.txt ${head.txt} text ${text}`);
   }
 
   const validSrcDest = ["b58hex", "b58txt", "hexb58", "hextxt", "txtb58", "txthex"];
