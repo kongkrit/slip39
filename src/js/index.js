@@ -633,6 +633,7 @@ console.log(`updateMasterSecret: ${sourceType} ${destType} source:${sourceValue}
 
     try {
 //console.log("trying");
+      updateLabel(dom.masterSecretTxt.value, headTxtLabel, dom.masterSecretTxtLabel);
       updateMasterSecret("txt", "hex", dom.masterSecretHex, v, false);
 	  updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel);
       updateMasterSecret("txt", "b58", dom.masterSecretB58, v, false);
