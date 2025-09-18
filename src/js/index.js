@@ -784,6 +784,7 @@ console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
 		
 		// clear Hex and B58 if necessary
 		if ( blank || !canConvert) {
+      dom.maateeSecretTxt.value = "";
 		  dom.masterSecretHex.value = "";
 		  dom.masterSecretB58.value = "";
 		}
