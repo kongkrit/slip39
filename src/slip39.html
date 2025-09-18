@@ -166,11 +166,14 @@
           <p class="note-text">Master Secret recovered from shares and optional passphrase</p>
         </div>
 
-      <label id="reconstructed-txt-label" for="reconstructed-txt"></label>
-      <div class="input-with-btn">
-        <textarea id="reconstructed-txt" rows="2" placeholder="(shown if master secret can be converted to text)" readonly></textarea>
-        <button onclick="copyToClipboard('reconstructed-txt')" id="reconstructed-txt-copy" type="button" aria-label="copy reconstructed text"></button>
+      <div id="reconstructed-txt-output" hidden>
+        <label id="reconstructed-txt-label" for="reconstructed-txt"></label>
+        <div class="input-with-btn">
+          <textarea id="reconstructed-txt" rows="2" placeholder="(shown if master secret can be converted to text)" readonly></textarea>
+          <button onclick="copyToClipboard('reconstructed-txt')" id="reconstructed-txt-copy" type="button" aria-label="copy reconstructed text"></button>
+        </div>
       </div>
+
       <label id="reconstructed-hex-label" for="reconstructed-hex"></label>
       <div class="input-with-btn">
         <textarea id="reconstructed-hex" rows="2" readonly></textarea>
