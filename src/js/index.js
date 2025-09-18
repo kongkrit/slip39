@@ -530,7 +530,7 @@
     // check invalid sourceType, destType
     const srcDest = `${sourceType}${destType}`;
     if (!validSrcDest.includes(srcDest)) {
-  	alert (`updateMasterSecret sourceType=${sourceType} and destType=${destType} not possible`);
+//alert (`updateMasterSecret sourceType=${sourceType} and destType=${destType} not possible`);
   	throw new Error (`updateMasterSecret sourceType=${sourceType} and destType=${destType} not possible`);
     }
     
