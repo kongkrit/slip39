@@ -644,7 +644,7 @@ console.log(`updateMasterSecret: ${sourceType} ${destType} source:${sourceValue}
       updateMasterSecret("txt", "hex", dom.masterSecretHex, v, false);
 	  updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel);
       updateMasterSecret("txt", "b58", dom.masterSecretB58, v, false);
-console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
+//console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
       updateLabel(dom.masterSecretB58.value, headB58Label, dom.masterSecretB58Label);
 	  if (vtrim.length > 0) createShares();
     } catch (e) {
@@ -797,12 +797,13 @@ console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
 		  dom.masterSecretB58.value = "";
 		} else {
       dom.masterSecretTxt.value = converter.bytesHexStringToPrintableASCII(dom.masterSecretHex.value);
-      updateLabel(dom.masterSecretTxt.value, headTxtLabel, dom.masterSecretTxtLabel);
     }
 
         checkMasterSecretHex(dom.masterSecretHex.value);
 		checkMasterSecretB58(dom.masterSecretB58.value);
 	    updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel);
+    updateLabel(dom.masterSecretB58.value, headB58Label, dom.masterSecretB58Label);
+    updateLabel(dom.masterSecretTxt.value, headTxtLabel, dom.masterSecretTxtLabel);
 		
 		dom.randomButtons.hidden = true;
 	    dom.secretTextInput.hidden = false;
