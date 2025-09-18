@@ -69,7 +69,6 @@
 						 
     decrypter            : byId("decrypter"),
     decrypterToggle      : byId("decrypter-toggle"),
-	reconstructedTxt     : byId("reconstructed-txt"),
 
     reconstructedTxtLabel: byId("reconstructed-txt-label"),
 	reconstructedTxt     : byId("reconstructed-txt"),
@@ -641,7 +640,7 @@ console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
       updateLabel(dom.masterSecretB58.value, headB58Label, dom.masterSecretB58Label);
 	  if (vtrim.length > 0) createShares();
     } catch (e) {
-      dom.masterSecretTxterror.textContent = e.message || String(e);
+      dom.masterSecretTxtError.textContent = e.message || String(e);
     }
 
 	if (tHex || tB58) { clearShares(); return; }
