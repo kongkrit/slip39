@@ -309,7 +309,7 @@
     return true;
   }
   
-  function checkMasterSecretTxt(strfull) {
+  function checkMasterSecretTxt(strFull) {
 	const str = strFull;
 	let text;
 
