@@ -266,6 +266,22 @@ async function copyToClipboard(elementId, trimEdges = false) {
 //    showThresholdError("");
   }
 
+  const headTxtLabel = { dtype: "txt", txt : "Master Secret Text",     bitsPerChar: 8,};
+  const headHexLabel = { dtype: "hex", txt : "Master Secret (Hex)",    bitsPerChar: 4,};
+  const headB58Label = { dtype: "b58", txt : "Master Secret (Base58)", bitsPerChar: 8,};
+
+  function updateLabel(value, head, el) {
+	const txt = value.trim();
+    const numBits  = txt.length * head.bitsPerChar;
+    const numBytes = numBits * 0.125;
+//console.log("numBits",numBits);
+//console.log("head.dtype",head.dtype);
+	const text = (numBits === 0 )? head.txt : head.txt + (head.dtype !== "b58" ? ` - ${numBytes} bytes (${numBits} bits)` : ` - ${numBytes} characters`);
+//console.log("text",text);
+    el.textContent = text;
+alert (`updateLabel head.dtype ${head.dtype} head.txt ${head.txt} text ${text}`);
+  }
+
   function clearReconstructed() {
     dom.reconstructedErr.textContent = "";
     dom.reconstructedTxt.value = "";
@@ -524,22 +540,6 @@ alert("aft");
   dom.strengthButtons.forEach(btn => {
     btn.addEventListener("click", generateStrength);
   });
-
-  const headTxtLabel = { dtype: "txt", txt : "Master Secret Text",     bitsPerChar: 8,};
-  const headHexLabel = { dtype: "hex", txt : "Master Secret (Hex)",    bitsPerChar: 4,};
-  const headB58Label = { dtype: "b58", txt : "Master Secret (Base58)", bitsPerChar: 8,};
-
-  function updateLabel(value, head, el) {
-	const txt = value.trim();
-    const numBits  = txt.length * head.bitsPerChar;
-    const numBytes = numBits * 0.125;
-//console.log("numBits",numBits);
-//console.log("head.dtype",head.dtype);
-	const text = (numBits === 0 )? head.txt : head.txt + (head.dtype !== "b58" ? ` - ${numBytes} bytes (${numBits} bits)` : ` - ${numBytes} characters`);
-//console.log("text",text);
-    el.textContent = text;
-alert (`updateLabel head.dtype ${head.dtype} head.txt ${head.txt} text ${text}`);
-  }
 
   const validSrcDest = ["b58hex", "b58txt", "hexb58", "hextxt", "txtb58", "txthex"];
   function updateMasterSecret(sourceType, destType, destEl, sourceValue, updateSource) {
