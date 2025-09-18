@@ -265,6 +265,7 @@
 
   function clearReconstructed() {
     dom.reconstructedErr.textContent = "";
+    dom.reconstructedTxt.value = "";
     dom.reconstructedHex.value = "";
     dom.reconstructedB58.value = "";
   }
