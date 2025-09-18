@@ -70,6 +70,7 @@
     decrypter            : byId("decrypter"),
     decrypterToggle      : byId("decrypter-toggle"),
 
+    reconstructedTxtAll  : byId("reconstructed-txt-all"),
     reconstructedTxtLabel: byId("reconstructed-txt-label"),
 	reconstructedTxt     : byId("reconstructed-txt"),
 	reconstructedTxtCopy : byId("reconstructed-txt-copy"),
@@ -446,6 +447,8 @@
       }
     } catch (e) {
       dom.reconstructedErr.textContent = e.message || String(e);
+      dom.reconstructedTxt.value = "";
+      dom.reconstructedTxtAll.hidden = true;
       dom.reconstructedHex.value = "";
       dom.reconstructedB58.value = "";
       return;
@@ -466,6 +469,7 @@
       secretBytes = slip39libs.slip39.recoverSecret(mnemonics, passphraseText);
     } catch (e) {
       dom.reconstructedErr.textContent = e.message || String(e);
+      dom.reconstructedTxtAll.hidden = true;
       return;
     }
     dom.reconstructedErr.textContent = "";
@@ -476,8 +480,10 @@
     
     if (canConvertHexToText(hexToBytes(secretHex))) {
       dom.reconstructedTxt.value = converter.bytesHexStringToPrintableASCII(secretHex);
+      dom.reconstructedTxtAll.hidden = false:
     } else {
       dom.reconstructedTxt.value = "";
+      dom.reconstructedTxtAll.hidden = true;
     }
     updateLabel(dom.reconstructedTxt.value, headTxtLabel, dom.reconstructedTxtLabel);
     
