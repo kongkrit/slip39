@@ -797,11 +797,12 @@ console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
 		  dom.masterSecretB58.value = "";
 		} else {
       dom.masterSecretTxt.value = converter.bytesHexStringToPrintableASCII(dom.masterSecretHex.value);
+      updateLabel(dom.masterSecretTxt.value, headTxtLabel, dom.masterSecretTxtLabel);
     }
 
         checkMasterSecretHex(dom.masterSecretHex.value);
 		checkMasterSecretB58(dom.masterSecretB58.value);
-	    updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel)
+	    updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel);
 		
 		dom.randomButtons.hidden = true;
 	    dom.secretTextInput.hidden = false;
