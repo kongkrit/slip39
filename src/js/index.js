@@ -475,7 +475,7 @@
     dom.reconstructedHex.value = secretHex;
     updateLabel(secretHex, headHexLabel, dom.reconstructedHexLabel);
     
-    if (canConvertHexToText(hexToBytes(secretHex)) {
+    if (canConvertHexToText(hexToBytes(secretHex))) {
       dom.reconstructedTxt.value = converter.bytesHexStringToPrintableASCII(secretHex);
     } else {
       dom.reconstructedTxt.value = "";
