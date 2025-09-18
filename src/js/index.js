@@ -795,7 +795,10 @@ console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
       dom.masterSecretTxt.value = "";
 		  dom.masterSecretHex.value = "";
 		  dom.masterSecretB58.value = "";
-		}
+		} else {
+      dom.masterSecretTxt.value = converter.bytesHexStringToPrintableASCII(dom.masterSecretHex.value);
+    }
+
         checkMasterSecretHex(dom.masterSecretHex.value);
 		checkMasterSecretB58(dom.masterSecretB58.value);
 	    updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel)
