@@ -279,7 +279,7 @@ async function copyToClipboard(elementId, trimEdges = false) {
 	const text = (numBits === 0 )? head.txt : head.txt + (head.dtype !== "b58" ? ` - ${numBytes} bytes (${numBits} bits)` : ` - ${numBytes} characters`);
 //console.log("text",text);
     el.textContent = text;
-alert (`updateLabel head.dtype ${head.dtype} head.txt ${head.txt} text ${text}`);
+//alert (`updateLabel head.dtype ${head.dtype} head.txt ${head.txt} text ${text}`);
   }
 
   function clearReconstructed() {
@@ -287,11 +287,11 @@ alert (`updateLabel head.dtype ${head.dtype} head.txt ${head.txt} text ${text}`)
     dom.reconstructedTxt.value = "";
     dom.reconstructedHex.value = "";
     dom.reconstructedB58.value = "";
-alert("b4");
+//alert("b4");
     updateLabel(dom.reconstructedTxt.value, headTxtLabel, dom.reconstructedTxtLabel);
     updateLabel(dom.reconstructedHex.value, headHexLabel, dom.reconstructedHexLabel);
     updateLabel(dom.reconstructedB58.value, headB58Label, dom.reconstructedB58Label);
-alert("aft");
+//alert("aft");
   }
   clearReconstructed();
 
