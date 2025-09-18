@@ -480,7 +480,7 @@
     
     if (canConvertHexToText(hexToBytes(secretHex))) {
       dom.reconstructedTxt.value = converter.bytesHexStringToPrintableASCII(secretHex);
-      dom.reconstructedTxtAll.hidden = false:
+      dom.reconstructedTxtAll.hidden = false;
     } else {
       dom.reconstructedTxt.value = "";
       dom.reconstructedTxtAll.hidden = true;
