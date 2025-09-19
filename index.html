@@ -551,7 +551,7 @@ button:active { transform: translateY(1px); }
 	    <label id="master-secret-txt-label" for="master-secret-txt"></label>
 		<div class="input-with-btn">
 	      <textarea id="master-secret-txt" rows="2" placeholder="enter text here..."></textarea>
-		  <button onclick="copyToClipboard('master-secret-txt')" id="master-secret-txt-copy" type="button" aria-label="copy master secret text"></button>
+		  <button onclick="copyToClipboard('master-secret-txt',true)" id="master-secret-txt-copy" type="button" aria-label="copy master secret text"></button>
 		</div>
 	  </div>
 
@@ -600,7 +600,7 @@ button:active { transform: translateY(1px); }
           </div>
       </div>
 
-        <div id="create-card-summary" class="summary-text">
+        <div id="create-summary" class="summary-text">
           <h3 class="summary-text">Created Shares</h3>
           <p class="note-text">Shares created by parameters from <i>Create</i> section</p>
         </div>
@@ -660,11 +660,14 @@ button:active { transform: translateY(1px); }
           <p class="note-text">Master Secret recovered from shares and optional passphrase</p>
         </div>
 
-      <label id="reconstructed-txt-label" for="reconstructed-txt"></label>
-      <div class="input-with-btn">
-        <textarea id="reconstructed-txt" rows="2" readonly></textarea>
-        <button onclick="copyToClipboard('reconstructed-txt')" id="reconstructed-txt-copy" type="button" aria-label="copy reconstructed text"></button>
+      <div id="reconstructed-txt-all" hidden>
+        <label id="reconstructed-txt-label" for="reconstructed-txt"></label>
+        <div class="input-with-btn">
+          <textarea id="reconstructed-txt" rows="2" placeholder="(shown if master secret can be converted to text)" readonly></textarea>
+          <button onclick="copyToClipboard('reconstructed-txt')" id="reconstructed-txt-copy" type="button" aria-label="copy reconstructed text"></button>
+        </div>
       </div>
+
       <label id="reconstructed-hex-label" for="reconstructed-hex"></label>
       <div class="input-with-btn">
         <textarea id="reconstructed-hex" rows="2" readonly></textarea>
@@ -33273,6 +33276,7 @@ const BASE58_CHARS = BASE58_STRING.split("");
 	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
 	  throw new Error ("bytesPerElement must be integer 1 or 2");
 	}
+	   if (str === "") return "";
     const arr1 = bytesHexStringToIntArray(str, bytesPerElement);
 	const big1 = intArrayToBigInt(arr1, 256 ** bytesPerElement);
 	const arr2 = bigIntToIntArray(big1, 58);
@@ -33283,6 +33287,7 @@ const BASE58_CHARS = BASE58_STRING.split("");
 	if (!Number.isInteger(bytesPerElement) || (bytesPerElement !== 1 && bytesPerElement !== 2)) {
 	  throw new Error ("bytesPerElement must be integer 1 or 2");
 	}
+    if (str === "") return "";
     const arr1 = base58arrayToIndices(str.split(""));
 	const big1 = intArrayToBigInt(arr1, 58);
 	const arr2 = bigIntToIntArray(big1, 256 ** bytesPerElement);
@@ -33397,7 +33402,7 @@ const BASE58_CHARS = BASE58_STRING.split("");
   }
   
   function isBase58(textIn) {
-	const pattern = new RegExp(`^[${base58text}]+$`);
+	const pattern = new RegExp(`^[${base58text}]*$`);
 	return pattern.test(textIn);
   }
 
@@ -33420,6 +33425,7 @@ const BASE58_CHARS = BASE58_STRING.split("");
   }
   
   function printableASCIItoBytesHexString(txt) {
+    if (txt === "") return "";
     let hex = "";
     for (let i = 0; i < txt.length; i++) {
       const code = txt.charCodeAt(i);
@@ -33434,6 +33440,7 @@ const BASE58_CHARS = BASE58_STRING.split("");
   }
   
   function bytesHexStringToPrintableASCII(hex) {
+    if (hex === "") return "";
     // if odd length, pad one 0 in front
 	hex = String(hex).trim();
 	
@@ -33457,13 +33464,15 @@ const BASE58_CHARS = BASE58_STRING.split("");
   }
   
   function printableASCIItoBase58 (txt) {
+    if (txt === "") return "";
 	const hex = printableASCIItoBytesHexString(txt);
 	return bytesHexStringToBase58(hex);
   }
   
   function base58toPrintableASCII (b58) {
+    if (b58 === "") return "";
     const hex = base58ToBytesHexString (b58, 1);
-	return bytesHexStringToBase58(hex);
+	return bytesHexStringToPrintableASCII(hex);
   }
 
   // expose
@@ -33561,8 +33570,8 @@ const BASE58_CHARS = BASE58_STRING.split("");
 						 
     decrypter            : byId("decrypter"),
     decrypterToggle      : byId("decrypter-toggle"),
-	reconstructedTxt     : byId("reconstructed-txt"),
 
+    reconstructedTxtAll  : byId("reconstructed-txt-all"),
     reconstructedTxtLabel: byId("reconstructed-txt-label"),
 	reconstructedTxt     : byId("reconstructed-txt"),
 	reconstructedTxtCopy : byId("reconstructed-txt-copy"),
@@ -33587,27 +33596,30 @@ const BASE58_CHARS = BASE58_STRING.split("");
   setIconForCopyButton(dom.reconstructedB58Copy);
   
   // --- Modern clipboard helper with fallback ---
-  async function copyToClipboard(elementId) {
-    const el = document.getElementById(elementId);
-    const text = el.value ?? '';
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(text);
-      } else {
-          const ta = document.createElement('textarea');
-          ta.value = text;
-          ta.style.position = 'fixed';
-          ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.focus();
-          ta.select();
-          document.execCommand('copy');
-          document.body.removeChild(ta);
-      }
-    } catch {
-      console.warn("Clipboard write failed");
-    }
+async function copyToClipboard(elementId, trimEdges = false) {
+  const el = document.getElementById(elementId);
+  let text = el.value ?? '';
+  if (trimEdges) {
+    text = text.trim(); // trim only edges if requested
   }
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+  } catch {
+    console.warn("Clipboard write failed");
+  }
+}
   
   // --- show/hide details on cards ---
   function setDetailVisibility(detailsEl, pillEl) {
@@ -33755,10 +33767,32 @@ const BASE58_CHARS = BASE58_STRING.split("");
 //    showThresholdError("");
   }
 
+  const headTxtLabel = { dtype: "txt", txt : "Master Secret Text",     bitsPerChar: 8,};
+  const headHexLabel = { dtype: "hex", txt : "Master Secret (Hex)",    bitsPerChar: 4,};
+  const headB58Label = { dtype: "b58", txt : "Master Secret (Base58)", bitsPerChar: 8,};
+
+  function updateLabel(value, head, el) {
+	const txt = value.trim();
+    const numBits  = txt.length * head.bitsPerChar;
+    const numBytes = numBits * 0.125;
+//console.log("numBits",numBits);
+//console.log("head.dtype",head.dtype);
+	const text = (numBits === 0 )? head.txt : head.txt + (head.dtype !== "b58" ? ` - ${numBytes} bytes (${numBits} bits)` : ` - ${numBytes} characters`);
+//console.log("text",text);
+    el.textContent = text;
+//alert (`updateLabel head.dtype ${head.dtype} head.txt ${head.txt} text ${text}`);
+  }
+
   function clearReconstructed() {
     dom.reconstructedErr.textContent = "";
+    dom.reconstructedTxt.value = "";
     dom.reconstructedHex.value = "";
     dom.reconstructedB58.value = "";
+//alert("b4");
+    updateLabel(dom.reconstructedTxt.value, headTxtLabel, dom.reconstructedTxtLabel);
+    updateLabel(dom.reconstructedHex.value, headHexLabel, dom.reconstructedHexLabel);
+    updateLabel(dom.reconstructedB58.value, headB58Label, dom.reconstructedB58Label);
+//alert("aft");
   }
   clearReconstructed();
 
@@ -33801,7 +33835,7 @@ const BASE58_CHARS = BASE58_STRING.split("");
     return true;
   }
   
-  function checkMasterSecretTxt(strfull) {
+  function checkMasterSecretTxt(strFull) {
 	const str = strFull;
 	let text;
 
@@ -33939,6 +33973,8 @@ const BASE58_CHARS = BASE58_STRING.split("");
       }
     } catch (e) {
       dom.reconstructedErr.textContent = e.message || String(e);
+      dom.reconstructedTxt.value = "";
+      dom.reconstructedTxtAll.hidden = true;
       dom.reconstructedHex.value = "";
       dom.reconstructedB58.value = "";
       return;
@@ -33959,6 +33995,7 @@ const BASE58_CHARS = BASE58_STRING.split("");
       secretBytes = slip39libs.slip39.recoverSecret(mnemonics, passphraseText);
     } catch (e) {
       dom.reconstructedErr.textContent = e.message || String(e);
+      dom.reconstructedTxtAll.hidden = true;
       return;
     }
     dom.reconstructedErr.textContent = "";
@@ -33966,7 +34003,18 @@ const BASE58_CHARS = BASE58_STRING.split("");
     const secretHex = bytesToHex(secretBytes);
     dom.reconstructedHex.value = secretHex;
     updateLabel(secretHex, headHexLabel, dom.reconstructedHexLabel);
+    
+    if (canConvertHexToText(hexToBytes(secretHex))) {
+      dom.reconstructedTxt.value = converter.bytesHexStringToPrintableASCII(secretHex);
+      dom.reconstructedTxtAll.hidden = false;
+    } else {
+      dom.reconstructedTxt.value = "";
+      dom.reconstructedTxtAll.hidden = true;
+    }
+    updateLabel(dom.reconstructedTxt.value, headTxtLabel, dom.reconstructedTxtLabel);
+    
     dom.reconstructedB58.value = converter.bytesHexStringToBase58(secretHex, 1);
+    updateLabel(dom.reconstructedB58.value, headB58Label, dom.reconstructedB58Label);
   }
 
   function generateStrength(e) {
@@ -33994,28 +34042,13 @@ const BASE58_CHARS = BASE58_STRING.split("");
     btn.addEventListener("click", generateStrength);
   });
 
-  const headTxtLabel = { dtype: "txt", txt : "Master Secret Text",     bitsPerChar: 8,};
-  const headHexLabel = { dtype: "hex", txt : "Master Secret (Hex)",    bitsPerChar: 4,};
-  const headB58Label = { dtype: "b58", txt : "Master Secret (Base58)", bitsPerChar: 8,};
-
-  function updateLabel(value, head, el) {
-	const txt = value.trim();
-    const numBits  = txt.length * head.bitsPerChar;
-    const numBytes = numBits * 0.125;
-//console.log("numBits",numBits);
-//console.log("head.dtype",head.dtype);
-	const text = (numBits === 0 )? head.txt : head.txt + (head.dtype !== "b58" ? ` - ${numBytes} bytes (${numBits} bits)` : ` - ${numBytes} characters`);
-//console.log("text",text);
-    el.textContent = text;
-  }
-
   const validSrcDest = ["b58hex", "b58txt", "hexb58", "hextxt", "txtb58", "txthex"];
   function updateMasterSecret(sourceType, destType, destEl, sourceValue, updateSource) {
   	
     // check invalid sourceType, destType
     const srcDest = `${sourceType}${destType}`;
     if (!validSrcDest.includes(srcDest)) {
-  	alert (`updateMasterSecret sourceType=${sourceType} and destType=${destType} not possible`);
+//alert (`updateMasterSecret sourceType=${sourceType} and destType=${destType} not possible`);
   	throw new Error (`updateMasterSecret sourceType=${sourceType} and destType=${destType} not possible`);
     }
     
@@ -34118,14 +34151,15 @@ console.log(`updateMasterSecret: ${sourceType} ${destType} source:${sourceValue}
 
     try {
 //console.log("trying");
+      updateLabel(dom.masterSecretTxt.value, headTxtLabel, dom.masterSecretTxtLabel);
       updateMasterSecret("txt", "hex", dom.masterSecretHex, v, false);
 	  updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel);
       updateMasterSecret("txt", "b58", dom.masterSecretB58, v, false);
-console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
+//console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
       updateLabel(dom.masterSecretB58.value, headB58Label, dom.masterSecretB58Label);
 	  if (vtrim.length > 0) createShares();
     } catch (e) {
-      dom.masterSecretTxterror.textContent = e.message || String(e);
+      dom.masterSecretTxtError.textContent = e.message || String(e);
     }
 
 	if (tHex || tB58) { clearShares(); return; }
@@ -34269,12 +34303,18 @@ console.log(`dom.masterSecretB58.value:${dom.masterSecretB58.value}:`);
 		
 		// clear Hex and B58 if necessary
 		if ( blank || !canConvert) {
+      dom.masterSecretTxt.value = "";
 		  dom.masterSecretHex.value = "";
 		  dom.masterSecretB58.value = "";
-		}
+		} else {
+      dom.masterSecretTxt.value = converter.bytesHexStringToPrintableASCII(dom.masterSecretHex.value);
+    }
+
         checkMasterSecretHex(dom.masterSecretHex.value);
 		checkMasterSecretB58(dom.masterSecretB58.value);
-	    updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel)
+	    updateLabel(dom.masterSecretHex.value, headHexLabel, dom.masterSecretHexLabel);
+    updateLabel(dom.masterSecretB58.value, headB58Label, dom.masterSecretB58Label);
+    updateLabel(dom.masterSecretTxt.value, headTxtLabel, dom.masterSecretTxtLabel);
 		
 		dom.randomButtons.hidden = true;
 	    dom.secretTextInput.hidden = false;
