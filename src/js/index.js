@@ -573,7 +573,7 @@ async function copyToClipboard(elementId, trimEdges = false) {
      	else if (destType === "b58") destV = converter.printableASCIItoBase58(srcTrim);
       }
 	}
-console.log(`updateMasterSecret: ${sourceType} ${destType} source:${sourceValue} sourceValue.length:${sourceValue.length} sourcetrim:${srcTrim} destV:${destV} ${updateSource}`);
+//console.log(`updateMasterSecret: ${sourceType} ${destType} source:${sourceValue} sourceValue.length:${sourceValue.length} sourcetrim:${srcTrim} destV:${destV} ${updateSource}`);
     destEl.value = destV;
   }
 /*
