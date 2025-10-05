@@ -790,9 +790,11 @@ async function copyToClipboard(elementId, trimEdges = false) {
 //console.log("canConvert",canConvert);
 
 	  let goAhead;
+    let confirmTriggered = false;
 	  if ( !blank && !canConvert) {
 
         goAhead = confirm("Master Secret (hex and Base58) is not empty,\nand cannot be converted safely to printable ASCII text (0x20-0x7e).\nSwitching to text mode will clear them.");
+        confirmTriggered = true;
 	  
 	  } else goAhead = true;
 //console.log("goAhead",goAhead);		
@@ -821,6 +823,11 @@ async function copyToClipboard(elementId, trimEdges = false) {
 		dom.masterSecretHex.placeholder = "will be converted from text";
 	    dom.masterSecretB58.readOnly = true;
 		dom.masterSecretB58.placeholder = "will be converted from text";
+    
+      if (confirmTriggered) {
+        dom.newShares.value = "";
+        dom.newSharesBase58.value = "";
+      }
 		
 	  } else { // user backs out of switching to text
 	  
